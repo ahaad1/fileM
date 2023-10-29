@@ -28,6 +28,7 @@ fileNode *FM = NULL, *CUR_DIR = NULL;
 
 int fileNodeCreateDir(char* path){
     ++FM->heirsCount;
+    if(FM->heirs == NULL) FM->heirs = (fileNode*)malloc(sizeof(fileNode));
     FM->heirs = (fileNode*)realloc(FM->heirs, FM->heirsCount);
     FM->heirs[FM->heirsCount - 1].name = (char*)malloc(sizeof(char) * strlen(path));
     FM->heirs[FM->heirsCount - 1].parent = FM;
