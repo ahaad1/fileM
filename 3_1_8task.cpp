@@ -16,15 +16,15 @@ typedef struct fileNode
     
 } fileNode;
 
-fileNode *FM = NULL;
+fileNode *FM = NULL, *CUR_DIR = NULL;
 
 void get_cur_dir(char *dst);
 int create(unsigned long long int disk_size);
 int chkDisk(fileNode *fn);
 int create_dir(const char* path);
-int fileNodeCreateDir(char* path);
+int fileNodeMkDir(char* path);
 
-int fileNodeCreateDir(char* path){
+int fileNodeMkDir(char* path){
     if(path[0] != '/'){
         ++FM->heirsCount;
         if(FM->heirs == NULL) FM->heirs = (fileNode*)malloc(sizeof(fileNode));
@@ -39,12 +39,12 @@ int fileNodeCreateDir(char* path){
         fprintf(stdout, "success: created directory %s\n", path);
     }
     else{
-        
+
     }
     return 1;
 }
 
-int create_dir(const char* path){ return chkDisk(FM) == 0 ? 0 : fileNodeCreateDir((char*)path); }
+int create_dir(const char* path){ return chkDisk(FM) == 0 ? 0 : fileNodeMkDir((char*)path); }
 
 // void get_cur_dir(char *dst){ strcpy(dst, CUR_DIR->absolute_path); }
 
