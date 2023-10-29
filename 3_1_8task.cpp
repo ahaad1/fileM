@@ -20,10 +20,11 @@ fileNode *FM = NULL, *CUR_DIR = NULL;
 
 void get_cur_dir(char *dst);
 int create(unsigned long long int disk_size);
-int chkDisk(fileNode *fn);
+int chkDsk(fileNode *fn);
 int create_dir(const char* path);
 int create_file(const char* path, int file_size);
 int fileNodeMkObj(char *path, int mode, int file_size);
+char** parseStr(char *path, int* s_len);
 
 // int fileNodeMkDir(char* path){
 //     if(path[0] != '/'){
@@ -45,6 +46,8 @@ int fileNodeMkObj(char *path, int mode, int file_size);
 // int fileNodeTouch(char* path, unsigned long long int size){
 // }
 
+
+//mode: 0 - file , 1 - directory
 int fileNodeMkObj(char *path, int mode, int file_size){
     if(path[0] != '/'){
         ++FM->heirsCount;
@@ -66,11 +69,11 @@ int fileNodeMkObj(char *path, int mode, int file_size){
 
 }
 
-int create_dir(const char* path){ return chkDisk(FM) == 0 ? 0 : fileNodeMkObj((char*)path,1,0); }
-int create_file(const char* path, int file_size) { return chkDisk(FM) == 0 ? 0 : fileNodeMkObj((char*)path, 0, file_size); }
+int create_dir(const char* path){ return chkDsk(FM) == 0 ? 0 : fileNodeMkObj((char*)path,1,0); }
+int create_file(const char* path, int file_size) { return chkDsk(FM) == 0 ? 0 : fileNodeMkObj((char*)path, 0, file_size); }
 
 int create(unsigned long long int disk_size){
-    if(chkDisk(FM)){ fprintf(stdout, "error: file manager already exists\n"); return 0; }
+    if(chkDsk(FM)){ fprintf(stdout, "error: file manager already exists\n"); return 0; }
     else if(disk_size <= 0){ fprintf(stdout, "error: wrong disk size\n"); return 0; }
     else{
         FM = (fileNode*)malloc(sizeof(fileNode));
@@ -91,4 +94,34 @@ int create(unsigned long long int disk_size){
     }
 }
 
-int chkDisk(fileNode *fn){ return fn == NULL ? 0 : 1; }
+char** parseStr(char *path, int* s_len){
+    *s_len = 0;
+    char **substrs = NULL, *substr = NULL;
+    int size = 0;
+    for(int i = 0; i < strlen(path); ++i){
+        int begin = -1, end = -1;
+        if(path[0] == '/'){
+            substrs = (char**)malloc(sizeof(char*));
+            ++(*s_len);
+            substrs[0][0] = '/';
+        }
+        if(path[i] != '/'){
+            ++size;
+            if(substr == NULL) substr = (char*)realloc(substr, sizeof(char));
+            substr = (char*)realloc(substr, sizeof(char) * size);
+            substr[size - 1] = path[i];
+        }
+        else{
+            if(substrs == NULL) substrs = (char**)malloc(sizeof(char*));
+            ++(*s_len);
+            substrs = (char**)realloc(substr, sizeof(char*)*(*s_len));
+            substrs[(*s_len) - 1] = (char*)malloc(sizeof(char) * strlen(substr));
+            strcpy(substrs[(*s_len) - 1], substr);
+            size = 0;
+            free(substr);
+        }
+    }
+    return substrs;
+}
+
+int chkDsk(fileNode *fn){ return fn == NULL ? 0 : 1; }

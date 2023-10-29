@@ -6,11 +6,22 @@
 int main()
 {
     // fileNode fn;
-    create(100);
-    create_dir("teest");
-    create_dir("teest1");
-    create_dir("teest2");
-    create_dir("teest3");
-    create_file("qweqweqwe.txt", 10);
+    // create(100);
+    // create_dir("teest");
+    // create_dir("teest1");
+    // create_dir("teest2");
+    // create_dir("teest3");
+    // create_file("qweqweqwe.txt", 10);
+    int s_len = 0;
+    char** qweqwe = parseStr((char*)"/qwe/123/zzz/qqqeqeqeqeqeqeqeq", &s_len);
+
+    printf("\n%d\n", s_len);
+
+    fprintf(stdout, "%d", strlen(qweqwe[0]));
+
+    fprintf(stdout, "%s", qweqwe[1]);
+
+
+
     return 0;
 }
