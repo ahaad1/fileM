@@ -95,12 +95,8 @@ int create(unsigned long long int disk_size){
 }
 
 void parseStr(char *path, int *s_len){
-    char* token;
-    char* string;
-    char* tofree;
-
+    char *token, *string, *tofree;
     string = strdup(path);
-
     printf("%s\n", string);
 
     if (string != NULL) {
