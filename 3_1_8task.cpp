@@ -24,7 +24,7 @@ int chkDsk(fileNode *fn);
 int create_dir(const char* path);
 int create_file(const char* path, int file_size);
 int fileNodeMkObj(char *path, int mode, int file_size);
-char** parseStr(char *path, int* s_len);
+void parseStr(char *path, int* s_len);
 
 // int fileNodeMkDir(char* path){
 //     if(path[0] != '/'){
@@ -94,34 +94,20 @@ int create(unsigned long long int disk_size){
     }
 }
 
-char** parseStr(char *path, int* s_len){
-    *s_len = 0;
-    char **substrs = NULL, *substr = NULL;
-    int size = 0;
-    for(int i = 0; i < strlen(path); ++i){
-        int begin = -1, end = -1;
-        if(path[0] == '/'){
-            substrs = (char**)malloc(sizeof(char*));
-            ++(*s_len);
-            substrs[0][0] = '/';
-        }
-        if(path[i] != '/'){
-            ++size;
-            if(substr == NULL) substr = (char*)realloc(substr, sizeof(char));
-            substr = (char*)realloc(substr, sizeof(char) * size);
-            substr[size - 1] = path[i];
-        }
-        else{
-            if(substrs == NULL) substrs = (char**)malloc(sizeof(char*));
-            ++(*s_len);
-            substrs = (char**)realloc(substr, sizeof(char*)*(*s_len));
-            substrs[(*s_len) - 1] = (char*)malloc(sizeof(char) * strlen(substr));
-            strcpy(substrs[(*s_len) - 1], substr);
-            size = 0;
-            free(substr);
-        }
+void parseStr(char *path, int *s_len){
+    char* token;
+    char* string;
+    char* tofree;
+
+    string = strdup(path);
+
+    printf("%s\n", string);
+
+    if (string != NULL) {
+        tofree = string;
+        while ((token = strsep(&string, "/")) != NULL) { printf("%s\n", token); }
+        free(tofree);
     }
-    return substrs;
 }
 
 int chkDsk(fileNode *fn){ return fn == NULL ? 0 : 1; }
