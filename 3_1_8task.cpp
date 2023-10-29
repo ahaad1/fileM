@@ -3,16 +3,9 @@
 #include <string.h>
 #include "os_file.h"
 
-void get_cur_dir(char *dst);
-int create(unsigned long long int disk_size);
-int isCreated(fileNode *f);
-int create_dir(const char* path);
-int fileNodeCreateObj(const char* path, int fnSize, short int isDir);
-int fileNodeCreateDir(const char* path);
-
 typedef struct fileNode
 {
-    unsigned long long int disk_size;
+    unsigned long long int dsksz;
     unsigned long long int size;
     char* name;
     short int isDir;
@@ -23,11 +16,17 @@ typedef struct fileNode
     
 } fileNode;
 
+fileNode *FM = NULL;
 
-fileNode *FM = NULL, *CUR_DIR = NULL;
+void get_cur_dir(char *dst);
+int create(unsigned long long int disk_size);
+int chkDisk(fileNode *fn);
+int create_dir(const char* path);
+int fileNodeCreateDir(char* path);
 
 int fileNodeCreateDir(char* path){
     ++FM->heirsCount;
+    fprintf(stdout, "\n%d\n", FM->heirsCount);
     if(FM->heirs == NULL) FM->heirs = (fileNode*)malloc(sizeof(fileNode));
     FM->heirs = (fileNode*)realloc(FM->heirs, FM->heirsCount);
     FM->heirs[FM->heirsCount - 1].name = (char*)malloc(sizeof(char) * strlen(path));
@@ -37,15 +36,16 @@ int fileNodeCreateDir(char* path){
     FM->heirs[FM->heirsCount - 1].absolute_path = NULL;
     FM->heirs[FM->heirsCount - 1].heirs = NULL;
     FM->heirs[FM->heirsCount - 1].heirsCount = 0;
+    fprintf(stdout, "success: created directory %s\n", path);
     return 1;
 }
 
-int create_dir(const char* path){ return isCreated(FM) == 0 ? 0 : fileNodeCreateDir(path); }
+int create_dir(const char* path){ return chkDisk(FM) == 0 ? 0 : fileNodeCreateDir((char*)path); }
 
-void get_cur_dir(char *dst){ strcpy(dst, CUR_DIR->absolute_path); }
+// void get_cur_dir(char *dst){ strcpy(dst, CUR_DIR->absolute_path); }
 
 int create(unsigned long long int disk_size){
-    if(isCreated(FM) == 1){ fprintf(stdout, "error: file manager already exists\n"); return 0; }
+    if(chkDisk(FM)){ fprintf(stdout, "error: file manager already exists\n"); return 0; }
     else if(disk_size <= 0){ fprintf(stdout, "error: wrong disk size\n"); return 0; }
     else{
         FM = (fileNode*)malloc(sizeof(fileNode));
@@ -54,11 +54,16 @@ int create(unsigned long long int disk_size){
         FM->heirs = NULL;
         FM->heirsCount = 0;
         FM->size = 0;
-        FM->disk_size = disk_size;
-        create_dir("/");
-        fprintf(stdout, "success: file manager created with disk size %d bytes", FM->disk_size);
+        FM->dsksz = disk_size;
+        FM->absolute_path = (char*)malloc(sizeof(char));
+        FM->name = (char*)malloc(sizeof(char));
+        FM->absolute_path[0] = '/';
+        FM->name[0] = '/';
+        FM->isDir = 1;
+        fprintf(stdout, "success: file manager created with disk size %d bytes\n", FM->dsksz);
+        fprintf(stdout, "root created successfully\n");
         return 1;
     }
 }
 
-int isCreated(fileNode *fn){ return fn == NULL; }
+int chkDisk(fileNode *fn){ return fn == NULL ? 0 : 1; }
