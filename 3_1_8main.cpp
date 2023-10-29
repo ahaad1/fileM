@@ -11,5 +11,6 @@ int main()
     create_dir("teest1");
     create_dir("teest2");
     create_dir("teest3");
+    create_file("qweqweqwe.txt", 10);
     return 0;
 }
