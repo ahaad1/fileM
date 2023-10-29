@@ -10,8 +10,8 @@ typedef struct fileNode
     char* name;
     short int isDir;
     int heirsCount;
-    struct fileNode *parent; 
-    struct fileNode *heirs; //subdirs
+    struct fileNode* parent; 
+    struct fileNode* heirs; //subdirs
     char* absolute_path;
     
 } fileNode;
@@ -25,17 +25,22 @@ int create_dir(const char* path);
 int fileNodeCreateDir(char* path);
 
 int fileNodeCreateDir(char* path){
-    ++FM->heirsCount;
-    if(FM->heirs == NULL) FM->heirs = (fileNode*)malloc(sizeof(fileNode));
-    FM->heirs = (fileNode*)realloc(FM->heirs, sizeof(fileNode) * FM->heirsCount);
-    FM->heirs[FM->heirsCount - 1].name = (char*)malloc(sizeof(char) * strlen(path));
-    FM->heirs[FM->heirsCount - 1].parent = FM;
-    FM->heirs[FM->heirsCount - 1].isDir = 1;
-    FM->heirs[FM->heirsCount - 1].size = 0;
-    FM->heirs[FM->heirsCount - 1].absolute_path = NULL;
-    FM->heirs[FM->heirsCount - 1].heirs = NULL;
-    FM->heirs[FM->heirsCount - 1].heirsCount = 0;
-    fprintf(stdout, "success: created directory %s\n", path);
+    if(path[0] != '/'){
+        ++FM->heirsCount;
+        if(FM->heirs == NULL) FM->heirs = (fileNode*)malloc(sizeof(fileNode));
+        FM->heirs = (fileNode*)realloc(FM->heirs, sizeof(fileNode) * FM->heirsCount);
+        FM->heirs[FM->heirsCount - 1].name = (char*)malloc(sizeof(char) * strlen(path));
+        FM->heirs[FM->heirsCount - 1].parent = FM;
+        FM->heirs[FM->heirsCount - 1].isDir = 1;
+        FM->heirs[FM->heirsCount - 1].size = 0;
+        FM->heirs[FM->heirsCount - 1].absolute_path = NULL;
+        FM->heirs[FM->heirsCount - 1].heirs = NULL;
+        FM->heirs[FM->heirsCount - 1].heirsCount = 0;
+        fprintf(stdout, "success: created directory %s\n", path);
+    }
+    else{
+        
+    }
     return 1;
 }
 
