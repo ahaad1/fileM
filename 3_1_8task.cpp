@@ -75,10 +75,8 @@ int create(unsigned long long int disk_size){
 }
 
 void parseStr(char *path, char ***parsed_str, int *s_len){
-    // fprintf(stdout, "qqweqwweqwe");
     char *token, *string, *toFree;
     string = strdup(path);
-    // printf("%s\n", string);
     if (string != NULL) {
         toFree = string;
         while ((token = strsep(&string, "/")) != NULL) { 
@@ -88,10 +86,9 @@ void parseStr(char *path, char ***parsed_str, int *s_len){
             else (*parsed_str) = (char**)realloc((*parsed_str), sizeof(char*)*(*s_len));
 
             (*parsed_str)[(*s_len) - 1] = (char*)malloc(sizeof(char)*strlen(token));
-            memcpy((*parsed_str)[(*s_len) - 1], token, strlen(token));
-            strcmp((*parsed_str)[(*s_len) - 1], token);
-            // fprintf(stdout, "%d\n", strlen(token));
-            // fprintf(stdout, "%s", (*parsed_str)[(*s_len) - 1]); 
+            // memcpy((*parsed_str)[(*s_len) - 1], token, strlen(token));
+            // strncpy((*parsed_str)[(*s_len) - 1], token, strlen(token));
+            (*parsed_str)[(*s_len) - 1] = strdup(token);
         }
         free(toFree);
     }

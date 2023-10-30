@@ -13,7 +13,12 @@ int main()
     // create_file("qweqweqwe.txt", 10);
     int s_len = 0;
     char **test = NULL;
-    parseStr((char*)"/qwe/123/zzz/qqqeqeqeqeqeqeqeq", &test , &s_len);
+    parseStr((char*)"/qwe/123/zzz/qqqeqeqeqqqeqeqeqqqeqqqqeqeqeqqqeqeqeqqqeqqqqeqeqeqqqeqeqeqqqeqqqqeqeqeqqqeqeqeqqqeqqqqeqeqeqqqeqeqeqqqeq", &test , &s_len);
+
+    for(int i = 0; i < s_len; ++i) {
+        printf("%s\n", test[i]);
+    }
+
 
     // fprintf(stdout, "%s", test[0]);
     // create(10000);
