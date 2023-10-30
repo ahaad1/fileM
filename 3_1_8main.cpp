@@ -5,7 +5,6 @@
 
 int main()
 {
-    // fileNode fn;
     // create(100);
     // create_dir("teest");
     // create_dir("teest1");
@@ -13,7 +12,10 @@ int main()
     // create_dir("teest3");
     // create_file("qweqweqwe.txt", 10);
     int s_len = 0;
-    parseStr((char*)"/qwe/123/zzz/qqqeqeqeqeqeqeqeq", &s_len);
+    char **test = NULL;
+    parseStr((char*)"/qwe/123/zzz/qqqeqeqeqeqeqeqeq", &test , &s_len);
 
+    // fprintf(stdout, "%s", test[0]);
+    // create(10000);
     return 0;
 }

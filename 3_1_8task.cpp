@@ -24,27 +24,7 @@ int chkDsk(fileNode *fn);
 int create_dir(const char* path);
 int create_file(const char* path, int file_size);
 int fileNodeMkObj(char *path, int mode, int file_size);
-void parseStr(char *path, int* s_len);
-
-// int fileNodeMkDir(char* path){
-//     if(path[0] != '/'){
-//         ++FM->heirsCount;
-//         if(FM->heirs == NULL) FM->heirs = (fileNode*)malloc(sizeof(fileNode));
-//         FM->heirs = (fileNode*)realloc(FM->heirs, sizeof(fileNode) * FM->heirsCount);
-//         FM->heirs[FM->heirsCount - 1].name = (char*)malloc(sizeof(char) * strlen(path));
-//         FM->heirs[FM->heirsCount - 1].parent = FM;
-//         FM->heirs[FM->heirsCount - 1].isDir = 1;
-//         FM->heirs[FM->heirsCount - 1].size = 0;
-//         FM->heirs[FM->heirsCount - 1].absolute_path = NULL;
-//         FM->heirs[FM->heirsCount - 1].heirs = NULL;
-//         FM->heirs[FM->heirsCount - 1].heirsCount = 0;
-//         fprintf(stdout, "success: created directory %s\n", path);
-//         return 1;
-//     }
-//     return 1;
-// }
-// int fileNodeTouch(char* path, unsigned long long int size){
-// }
+void parseStr(char *path, char ***parsed_str, int *s_len);
 
 
 //mode: 0 - file , 1 - directory
@@ -94,15 +74,26 @@ int create(unsigned long long int disk_size){
     }
 }
 
-void parseStr(char *path, int *s_len){
-    char *token, *string, *tofree;
+void parseStr(char *path, char ***parsed_str, int *s_len){
+    // fprintf(stdout, "qqweqwweqwe");
+    char *token, *string, *toFree;
     string = strdup(path);
-    printf("%s\n", string);
-
+    // printf("%s\n", string);
     if (string != NULL) {
-        tofree = string;
-        while ((token = strsep(&string, "/")) != NULL) { printf("%s\n", token); }
-        free(tofree);
+        toFree = string;
+        while ((token = strsep(&string, "/")) != NULL) { 
+            if(strlen(token) <= 0) continue;
+            ++(*s_len);
+            if((*parsed_str) == NULL) (*parsed_str) = (char**)malloc(sizeof(char*));
+            else (*parsed_str) = (char**)realloc((*parsed_str), sizeof(char*)*(*s_len));
+
+            (*parsed_str)[(*s_len) - 1] = (char*)malloc(sizeof(char)*strlen(token));
+            memcpy((*parsed_str)[(*s_len) - 1], token, strlen(token));
+            strcmp((*parsed_str)[(*s_len) - 1], token);
+            // fprintf(stdout, "%d\n", strlen(token));
+            // fprintf(stdout, "%s", (*parsed_str)[(*s_len) - 1]); 
+        }
+        free(toFree);
     }
 }
 
