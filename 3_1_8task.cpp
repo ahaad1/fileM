@@ -15,9 +15,7 @@ typedef struct fileNode
     
 } fileNode;
 
-int DskSz = -1;
-
-fileNode *FM = NULL, *CUR_DIR = NULL;
+int DskSz = -1; fileNode *FM = NULL; char *CUR_DIR = NULL;
 
 void setup_file_manager(file_manager_t *fm);
 int create_dir(const char* path);
@@ -44,7 +42,10 @@ int fileNodeChDir(char *path){
             for(int i = 0; i < FM->heirsCount; ++i){
                 if(strcmp(FM->heirs[i].name, token) == 0) { 
                     fprintf(stdout, "cd %s %s\n", FM->absolute_path, FM->heirs[i].absolute_path);
-                    FM = &FM->heirs[i]; break; return 1; 
+                    CUR_DIR = (char*)realloc(CUR_DIR, sizeof(char)*strlen(FM->heirs[i].absolute_path));
+                    CUR_DIR = FM->absolute_path;
+                    FM = &FM->heirs[i]; 
+                    break;  
                 }
             }
         }
@@ -52,12 +53,14 @@ int fileNodeChDir(char *path){
     }
     free(token);
     free(string);
-    return 0;
+    return 1;
 }
 
 void fileNodeGoToRoot(){
     while(FM->parent != NULL){
         FM = FM->parent;
+        CUR_DIR = (char*)realloc(CUR_DIR, sizeof(char)*strlen(FM->absolute_path));
+        CUR_DIR = FM->absolute_path; 
         fprintf(stdout, "%s\n", FM->name);
     }
 }
@@ -103,9 +106,16 @@ int create(int disk_size){
         DskSz = disk_size;
         fprintf(stdout, "success: file manager created with disk size %d bytes\n", DskSz);
         fprintf(stdout, "root created successfully\n");
+
+        CUR_DIR = (char*)malloc(sizeof(char)*strlen(FM->absolute_path));
+        CUR_DIR = FM->absolute_path;
+
         return 1;
     }
 }
+
+
+void get_cur_dir(char *dst){ strcpy(dst, FM->absolute_path); }
 
 int chkDsk(fileNode *fn){ return fn == NULL ? 0 : 1; }
 
@@ -114,8 +124,8 @@ void setup_file_manager(file_manager_t *fm) {
     fm->create_dir = create_dir;
     fm->create_file = create_file;
     fm->change_dir = change_dir;
+    fm->get_cur_dir = get_cur_dir;
     // fm->destroy = fm_destroy;
-    // fm->get_cur_dir = fm_get_cur_dir;
     // fm->remove = fm_remove;
     // fm->move = fm_move;
 }
