@@ -11,14 +11,14 @@ int main()
         fm.create(42069);
         fm.create_dir("cat");
         fm.create_dir("cat/says");
-        fm.create_dir("cat/says/meow");
-        fm.create_dir("cat/doesnt");
-        fm.create_dir("cat/doesnt/says");
-        fm.create_dir("cat/doesnt/says/woof");
-        fm.create_dir("/dream_numbers");
-        fm.create_dir("/dream_numbers/420");
-        fm.create_dir("/henpecked_numbers");
-        fm.create_dir("/henpecked_numbers/69");
+        // fm.create_dir("cat/says/meow");
+        // fm.create_dir("cat/doesnt");
+        // fm.create_dir("cat/doesnt/says");
+        // fm.create_dir("cat/doesnt/says/woof");
+        // fm.create_dir("/dream_numbers");
+        // fm.create_dir("/dream_numbers/420");
+        // fm.create_dir("/henpecked_numbers");
+        // fm.create_dir("/henpecked_numbers/69");
 
     // create(100);
     // create_dir("teest");
