@@ -27,12 +27,14 @@ int create(unsigned long long int disk_size);
 int chkDsk(fileNode *fn);
 int fileNodeMkObj(char *path, int mode, int file_size);
 int fileNodeChDirGlobal(char *path);
-int fileNodeChDirLocal(char *path);
+int fileNodeGoDown(char *path);
+int fileNodeGoUp(char *path);
 void fileNodeGoToRoot();
 
 int create_dir(const char* path){ return chkDsk(FM) == 0 ? 0 : fileNodeMkObj((char*)path,1,0); }
 int create_file(const char* path, int file_size) { return chkDsk(FM) == 0 ? 0 : fileNodeMkObj((char*)path, 0, file_size); }
 int change_dir(const char* path) { return chkDsk(FM) == 0 ? 0 : fileNodeChDirGlobal((char*)path); }
+
 
 int fileNodeChDirGlobal(char *path){
     char *token, *string, *toFree;
@@ -55,10 +57,6 @@ int fileNodeChDirGlobal(char *path){
     free(token);
     free(string);
     return 1;
-}
-
-int fileNodeChDirLocal(char *path){
-    
 }
 
 void fileNodeGoToRoot(){
@@ -128,6 +126,21 @@ int create(int disk_size){
     }
 }
 
+int fileNodeGoDown(char *path){
+    for(int i = 0; i < FM->heirsCount; ++i){
+        if(strcmp(FM->heirs[i].name, path) == 0){
+            FM = &FM->heirs[i];
+            break;
+            return 1;
+        }
+    }
+    return 0;
+}
+
+int fileNodeGoUp(char *path){
+    if(strcmp(FM->parent->name, path) == 0){ FM = FM->parent; return 1; }
+    return 0;
+}
 
 void get_cur_dir(char *dst){ strcpy(dst, FM->absolute_path); }
 
