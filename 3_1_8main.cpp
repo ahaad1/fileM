@@ -10,10 +10,13 @@ int main()
         setup_file_manager(&fm);
         fm.create(42069);
         fm.create_dir("cat");
-        fm.change_dir("cat/qweqwe/adasdasdasd");
-        // fileNodeGoToRoot();
-        // fm.create_dir("catcat");
-        // fm.change_dir("catcat");
+
+        fm.change_dir("cat");
+        fm.create_dir("catcat");
+        
+        fm.change_dir("catcat");
+        fm.change_dir("/");
+        fm.change_dir("/cat/catcat");
         // fm.create_dir("catdir");
         // fileNodeGoToRoot();
         // fm.create_dir("cat/says");
