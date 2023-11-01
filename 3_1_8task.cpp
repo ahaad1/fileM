@@ -9,8 +9,8 @@ typedef struct fileNode
     char* name;
     short int isDir;
     int heirsCount;
-    struct fileNode* parent;
-    struct fileNode* heirs; //subdirs
+    fileNode* parent;
+    fileNode* heirs; //subdirs
     char* absolute_path;
 
 } fileNode;
@@ -33,6 +33,7 @@ int fileNodeGoUp(char *path);
 int fileNodeMkObjValidated(char *path, int mode, int fileSize);
 int fileNodeGoToDirGlobal();
 void fileNodeGoToRoot();
+void printDir();
 
 int create_dir(const char* path){ return chkDsk(FM) == 0 ? 0 : fileNodeMkObjValidated((char*)path,1,0); }
 int create_file(const char* path, int file_size) { return chkDsk(FM) == 0 ? 0 : fileNodeMkObjValidated((char*)path, 0, file_size); }
@@ -51,13 +52,13 @@ int fileNodeChDirGlobal(char *path){
             if(strcmp(token, "") == 0 || strlen(token) <= 0 || token[0] == '\0') continue;
             int chkdTokenIndx = fileNodeGoDownChk(token);
             if(chkdTokenIndx >= 0){
-                fprintf(stdout, "chdir global: %s %s\n", CUR_DIR, FM->heirs[chkdTokenIndx].absolute_path);
+                // fprintf(stdout, "chdir global: %s %s\n", CUR_DIR, FM->heirs[chkdTokenIndx].absolute_path);
                 fileNodeGoDown(chkdTokenIndx);
                 free(CUR_DIR);
                 CUR_DIR = strdup(FM->absolute_path);
             }
             else{
-                fprintf(stdout, "chdir error global: no such directory %s in %s\n", token, FM->absolute_path);
+                // fprintf(stdout, "chdir error global: no such directory %s in %s\n", token, FM->absolute_path);
             }
         }
         free(toFree);
@@ -77,11 +78,11 @@ int fileNodeGoToDirGlobal(){
         if(strcmp(token, "") == 0 || strlen(token) <= 0 || token[0] == '\0') continue;
         int chkdTokenIndx = fileNodeGoDownChk(token);
         if(chkdTokenIndx >= 0){
-            fprintf(stdout, "current dir: %s %s\n", CUR_DIR, FM->heirs[chkdTokenIndx].absolute_path);
+            // fprintf(stdout, "current dir: %s %s\n", CUR_DIR, FM->heirs[chkdTokenIndx].absolute_path);
             fileNodeGoDown(chkdTokenIndx);
         }
         else{
-            fprintf(stdout, "current dir error: no such directory %s in %s\n", token, FM->absolute_path);
+            // fprintf(stdout, "current dir error: no such directory %s in %s\n", token, FM->absolute_path);
             return 0;
         }
     }
@@ -100,11 +101,16 @@ int fileNodeMkObjValidated(char *path, int mode, int fileSize){
     toFree = string;
     while((token = strsep(&string, "/")) != NULL){
         if(strcmp(token, "") == 0 || strlen(token) <= 0 || token[0] == '\0') continue;
-        
         int chkdIndx = fileNodeGoDownChk(token);
-
-        if(chkdIndx == -1) { fileNodeMkObj(token, mode, fileSize); }
-        if(mode == 1) fileNodeGoDown(fileNodeGoDownChk(token));
+        if(chkdIndx == -1) { 
+            if(fileSize > DskSz || fileSize + OcpdSz > DskSz || fileSize < 0) {
+                fprintf(stdout, "error: file not created\nwrong file size %d\n", fileSize);
+                return 0;
+            }
+            fileNodeMkObj(token, mode, fileSize); 
+        }
+        printDir();
+        fileNodeGoDown(fileNodeGoDownChk(token));
     }
     free(toFree);
     return 1;
@@ -113,14 +119,6 @@ int fileNodeMkObjValidated(char *path, int mode, int fileSize){
 //mode: 0 - file , 1 - directory
 int fileNodeMkObj(char *objName, int mode, int file_size){
     if(strcmp(objName, "") == 0 || strlen(objName) <= 0 || objName[0] == '\0') return 0;
-    if(file_size > DskSz || file_size + OcpdSz > DskSz || file_size < 0) {
-        fprintf(stdout, "error: file not created\nwrong file size %d\n", file_size);
-        return 0;
-    }
-    if(FM->isDir == 0 && mode == 1){
-        fprintf(stdout, "error: impossible to create directory in file\n");
-        return 0;
-    }
     ++FM->heirsCount;
     if(FM->heirs == NULL) FM->heirs = (fileNode*)malloc(sizeof(fileNode));
     else FM->heirs = (fileNode*)realloc(FM->heirs, sizeof(fileNode) * FM->heirsCount);
@@ -135,7 +133,7 @@ int fileNodeMkObj(char *objName, int mode, int file_size){
     FM->heirs[FM->heirsCount - 1].heirsCount = 0;
     OcpdSz += file_size;
     if(mode == 1) fprintf(stdout, "success: created directory %s in %s\n", FM->heirs[FM->heirsCount - 1].name, FM->absolute_path);
-    if(mode == 0) fprintf(stdout, "success: created file %s with size %lld bytes\nFree space: %d bytes\n", FM->heirs[FM->heirsCount - 1].absolute_path, FM->heirs[FM->heirsCount - 1].size, DskSz - file_size);
+    if(mode == 0) fprintf(stdout, "success: created file %s with size %lld bytes\nFree space: %d bytes\n", FM->heirs[FM->heirsCount - 1].name, FM->heirs[FM->heirsCount - 1].size, DskSz - file_size);
     return 1;
 }
 
@@ -161,21 +159,18 @@ int create(int disk_size){
 }
 
 int fileNodeGoDown(int heirIndx){
-    fprintf(stdout, "chdir %s %s\n", FM->absolute_path, FM->heirs[heirIndx].absolute_path);
+    if(FM->heirs[heirIndx].isDir == 0) return 0;
+    // fprintf(stdout, "chdir %s %s\n", FM->absolute_path, FM->heirs[heirIndx].absolute_path);
     FM = &FM->heirs[heirIndx];
     return 1;
 }
 
 int fileNodeGoDownChk(char *path){
-    // fprintf(stdout, "chk is exists %s in %s\n", path, FM->absolute_path);
     for(int i = 0; i < FM->heirsCount; ++i){
-        // fprintf(stdout, "CHECKING ---%s--- ===%s===\n", FM->heirs[i].name, path);
         if(strcmp(FM->heirs[i].name, path) == 0 && FM->heirs[i].isDir == 1){
-            // fprintf(stdout, "%s exists in %s\n", path, FM->absolute_path);
             return i;
         }
     }
-    // fprintf(stdout, "%s does not exists in %s\n", path, FM->absolute_path);
     return -1;
 }
 
@@ -186,9 +181,17 @@ int fileNodeGoUp(char *path){
 
 void fileNodeGoToRoot(){
     while(FM->parent != NULL){
-        fprintf(stdout, "going to / { %s %s }\n", FM->absolute_path, FM->parent->absolute_path);
+        // fprintf(stdout, "going to / { %s %s }\n", FM->absolute_path, FM->parent->absolute_path);
         FM = FM->parent;
     }
+}
+
+void printDir(){
+    fprintf(stdout,"======\n");
+    for(int i = 0; i < FM->heirsCount; ++i){
+        fprintf(stdout, "%s\t%s\n",FM->absolute_path,FM->name);
+    }
+    fprintf(stdout,"======\n");
 }
 
 void get_cur_dir(char *dst){ strcpy(dst, CUR_DIR); }
@@ -205,4 +208,3 @@ void setup_file_manager(file_manager_t *fm) {
     // fm->remove = fm_remove;
     // fm->move = fm_move;
 }
-

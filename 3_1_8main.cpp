@@ -8,7 +8,7 @@ int main()
 
         file_manager_t fm;
         setup_file_manager(&fm);
-        fm.create(42069);
+        fm.create(1024);
         fm.create_dir("cat");
 
         fm.create_dir("/cat/meow");
@@ -17,6 +17,7 @@ int main()
         
         fm.create_dir("woof");
         fm.change_dir("/");
+
         fm.create_file("test.meow", 1000);
         fm.create_dir("/cat/meow/woof");
 
@@ -24,9 +25,12 @@ int main()
         fm.change_dir("/");
         fm.change_dir("woof");
         fm.change_dir("/cat/meow");
-        fm.create_file("test.ttt",1000000);
+        // fm.create_file("test.ttt",1000000);
         fm.create_file("/cat/test.txt", 1);
+
+        fm.change_dir("/");
         fm.create_dir("/cat/test.txt/meow");
+
         // fm.create_dir("cat/says");
         // fm.create_dir("cat/says/meow");
         // fm.create_dir("cat/doesnt");
