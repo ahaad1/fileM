@@ -114,7 +114,11 @@ int fileNodeMkObjValidated(char *path, int mode, int fileSize){
 int fileNodeMkObj(char *objName, int mode, int file_size){
     if(strcmp(objName, "") == 0 || strlen(objName) <= 0 || objName[0] == '\0') return 0;
     if(file_size > DskSz || file_size + OcpdSz > DskSz || file_size < 0) {
-        fprintf(stdout, "error: wrong file size %d\n", file_size);
+        fprintf(stdout, "error: file not created\nwrong file size %d\n", file_size);
+        return 0;
+    }
+    if(FM->isDir == 0 && mode == 1){
+        fprintf(stdout, "error: impossible to create directory in file\n");
         return 0;
     }
     ++FM->heirsCount;

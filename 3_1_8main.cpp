@@ -24,7 +24,9 @@ int main()
         fm.change_dir("/");
         fm.change_dir("woof");
         fm.change_dir("/cat/meow");
-
+        fm.create_file("test.ttt",1000000);
+        fm.create_file("/cat/test.txt", 1);
+        fm.create_dir("/cat/test.txt/meow");
         // fm.create_dir("cat/says");
         // fm.create_dir("cat/says/meow");
         // fm.create_dir("cat/doesnt");
