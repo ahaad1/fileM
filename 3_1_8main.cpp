@@ -21,6 +21,9 @@ int main()
         fm.create_dir("/cat/meow/woof");
 
         fm.change_dir("meow");
+        fm.change_dir("/");
+        fm.change_dir("woof");
+        fm.change_dir("/cat/meow");
 
         // fm.create_dir("cat/says");
         // fm.create_dir("cat/says/meow");

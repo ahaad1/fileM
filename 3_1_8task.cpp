@@ -40,7 +40,6 @@ int change_dir(const char* path) { return chkDsk(FM) == 0 ? 0 : fileNodeChDirGlo
 
 
 int fileNodeChDirGlobal(char *path){
-    if(FM->)
     fileNodeGoToDirGlobal();
     if(path[0] == '/' && strlen(path) == 1){ fileNodeGoToRoot(); return 1; }
     if(path[0] == '/') fileNodeGoToRoot();
