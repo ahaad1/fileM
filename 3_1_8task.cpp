@@ -120,12 +120,7 @@ int fileNodeMkObj(char *objName, int mode, int file_size){
     FM->heirs[FM->heirsCount - 1].parent = FM;
     FM->heirs[FM->heirsCount - 1].isDir = mode;
     FM->heirs[FM->heirsCount - 1].size = file_size;
-
-    // FM->heirs[FM->heirsCount - 1].absolute_path = (char*)malloc(sizeof(char)*(strlen(objName) + strlen(FM->absolute_path) + 1));
-    
     FM->heirs[FM->heirsCount - 1].absolute_path = strdup(FM->absolute_path);
-    
-    // strcpy(FM->heirs[FM->heirsCount - 1].absolute_path, FM->absolute_path);
     strcat(FM->heirs[FM->heirsCount - 1].absolute_path, objName);
     strcat(FM->heirs[FM->heirsCount - 1].absolute_path, "/");
     FM->heirs[FM->heirsCount - 1].heirs = NULL;
