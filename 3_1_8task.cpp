@@ -10,7 +10,7 @@ typedef struct fileNode
     short int isDir;
     int heirsCount;
     fileNode* parent;
-    fileNode* heirs; //subdirs
+    fileNode** heirs; //subdirs
     char* absolute_path;
 
 } fileNode;
@@ -52,13 +52,13 @@ int fileNodeChDirGlobal(char *path){
             if(strcmp(token, "") == 0 || strlen(token) <= 0 || token[0] == '\0') continue;
             int chkdTokenIndx = fileNodeGoDownChk(token);
             if(chkdTokenIndx >= 0){
-                // fprintf(stdout, "chdir global: %s %s\n", CUR_DIR, FM->heirs[chkdTokenIndx].absolute_path);
+                fprintf(stdout, "chdir global: %s %s\n", CUR_DIR, FM->heirs[chkdTokenIndx]->absolute_path);
                 fileNodeGoDown(chkdTokenIndx);
                 free(CUR_DIR);
                 CUR_DIR = strdup(FM->absolute_path);
             }
             else{
-                // fprintf(stdout, "chdir error global: no such directory %s in %s\n", token, FM->absolute_path);
+                fprintf(stdout, "chdir error global: no such directory %s in %s\n", token, FM->absolute_path);
             }
         }
         free(toFree);
@@ -120,20 +120,21 @@ int fileNodeMkObjValidated(char *path, int mode, int fileSize){
 int fileNodeMkObj(char *objName, int mode, int file_size){
     if(strcmp(objName, "") == 0 || strlen(objName) <= 0 || objName[0] == '\0') return 0;
     ++FM->heirsCount;
-    if(FM->heirs == NULL) FM->heirs = (fileNode*)malloc(sizeof(fileNode));
-    else FM->heirs = (fileNode*)realloc(FM->heirs, sizeof(fileNode) * FM->heirsCount);
-    FM->heirs[FM->heirsCount - 1].name = strdup(objName);
-    FM->heirs[FM->heirsCount - 1].parent = FM;
-    FM->heirs[FM->heirsCount - 1].isDir = mode;
-    FM->heirs[FM->heirsCount - 1].size = file_size;
-    FM->heirs[FM->heirsCount - 1].absolute_path = strdup(FM->absolute_path);
-    strcat(FM->heirs[FM->heirsCount - 1].absolute_path, objName);
-    strcat(FM->heirs[FM->heirsCount - 1].absolute_path, "/");
-    FM->heirs[FM->heirsCount - 1].heirs = NULL;
-    FM->heirs[FM->heirsCount - 1].heirsCount = 0;
+    if(FM->heirs == NULL) FM->heirs = (fileNode**)malloc(sizeof(fileNode*));
+    else FM->heirs = (fileNode**)realloc(FM->heirs, sizeof(fileNode*) * FM->heirsCount);
+    fileNode *newFm = (fileNode*)malloc(sizeof(fileNode));
+    newFm->name = strdup(objName);
+    newFm->parent = FM;
+    newFm->isDir = mode;
+    newFm->absolute_path = strdup(FM->absolute_path);
+    strcat(newFm->absolute_path, objName);
+    strcat(newFm->absolute_path, "/");
+    newFm->heirs = NULL;
+    newFm->heirsCount = 0;
+    FM->heirs[FM->heirsCount - 1] = newFm;
     OcpdSz += file_size;
-    if(mode == 1) fprintf(stdout, "success: created directory %s in %s\n", FM->heirs[FM->heirsCount - 1].name, FM->absolute_path);
-    if(mode == 0) fprintf(stdout, "success: created file %s with size %lld bytes\nFree space: %d bytes\n", FM->heirs[FM->heirsCount - 1].name, FM->heirs[FM->heirsCount - 1].size, DskSz - file_size);
+    if(mode == 1) fprintf(stdout, "success: created directory %s in %s\n", FM->heirs[FM->heirsCount - 1]->name, FM->absolute_path);
+    if(mode == 0) fprintf(stdout, "success: created file %s with size %lld bytes\nFree space: %d bytes\n", FM->heirs[FM->heirsCount - 1]->name, FM->heirs[FM->heirsCount - 1]->size, DskSz - file_size);
     return 1;
 }
 
@@ -159,15 +160,15 @@ int create(int disk_size){
 }
 
 int fileNodeGoDown(int heirIndx){
-    if(FM->heirs[heirIndx].isDir == 0) return 0;
+    if(FM->heirs[heirIndx]->isDir == 0) return 0;
     // fprintf(stdout, "chdir %s %s\n", FM->absolute_path, FM->heirs[heirIndx].absolute_path);
-    FM = &FM->heirs[heirIndx];
+    FM = FM->heirs[heirIndx];
     return 1;
 }
 
 int fileNodeGoDownChk(char *path){
     for(int i = 0; i < FM->heirsCount; ++i){
-        if(strcmp(FM->heirs[i].name, path) == 0 && FM->heirs[i].isDir == 1){
+        if(strcmp(FM->heirs[i]->name, path) == 0 && FM->heirs[i]->isDir == 1){
             return i;
         }
     }
@@ -189,7 +190,7 @@ void fileNodeGoToRoot(){
 void printDir(){
     fprintf(stdout,"======\n");
     for(int i = 0; i < FM->heirsCount; ++i){
-        fprintf(stdout, "%s\t%s\n",FM->absolute_path,FM->name);
+        fprintf(stdout, "%s\t%s\n",FM->absolute_path, FM->heirs[i]->absolute_path);
     }
     fprintf(stdout,"======\n");
 }

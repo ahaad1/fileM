@@ -8,37 +8,16 @@ int main()
 
         file_manager_t fm;
         setup_file_manager(&fm);
-        fm.create(1024);
+        fm.create(42069);
         fm.create_dir("cat");
-
-        fm.create_dir("/cat/meow");
-        
-        fm.change_dir("/cat");
-        
-        fm.create_dir("woof");
-        fm.change_dir("/");
-
-        fm.create_file("test.meow", 1000);
-        fm.create_dir("/cat/meow/woof");
-
-        fm.change_dir("meow");
-        fm.change_dir("/");
-        fm.change_dir("woof");
-        fm.change_dir("/cat/meow");
-        // fm.create_file("test.ttt",1000000);
-        fm.create_file("/cat/test.txt", 1);
-
-        fm.change_dir("/");
-        fm.create_dir("/cat/test.txt/meow");
-
-        // fm.create_dir("cat/says");
-        // fm.create_dir("cat/says/meow");
-        // fm.create_dir("cat/doesnt");
-        // fm.create_dir("cat/doesnt/says");
-        // fm.create_dir("cat/doesnt/says/woof");
-        // fm.create_dir("/dream_numbers");
-        // fm.create_dir("/dream_numbers/420");
-        // fm.create_dir("/henpecked_numbers");
-        // fm.create_dir("/henpecked_numbers/69");
+        fm.create_dir("cat/says");
+        fm.create_dir("cat/says/meow");
+        fm.create_dir("cat/doesnt");
+        fm.create_dir("cat/doesnt/says");
+        fm.create_dir("cat/doesnt/says/woof");
+        fm.create_dir("/dream_numbers");
+        fm.create_dir("/dream_numbers/420");
+        fm.create_dir("/henpecked_numbers");
+        fm.create_dir("/henpecked_numbers/69");
     return 0;
 }
