@@ -11,12 +11,17 @@ int main()
         fm.create(42069);
         fm.create_dir("cat");
 
-        // fm.change_dir("cat");
         fm.create_dir("/cat/meow");
         
         fm.change_dir("/cat");
+        
         fm.create_dir("woof");
         fm.change_dir("/");
+        fm.create_file("test.meow", 1000);
+        fm.create_dir("/cat/meow/woof");
+
+        fm.change_dir("meow");
+
         // fm.create_dir("cat/says");
         // fm.create_dir("cat/says/meow");
         // fm.create_dir("cat/doesnt");

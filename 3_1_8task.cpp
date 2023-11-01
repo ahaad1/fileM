@@ -27,7 +27,7 @@ int create(unsigned long long int disk_size);
 int chkDsk(fileNode *fn);
 int fileNodeMkObj(char *path, int mode, int file_size);
 int fileNodeChDirGlobal(char *path);
-void fileNodeGoDown(int heirIndx);
+int fileNodeGoDown(int heirIndx);
 int fileNodeGoDownChk(char *path);
 int fileNodeGoUp(char *path);
 int fileNodeMkObjValidated(char *path, int mode, int fileSize);
@@ -40,7 +40,9 @@ int change_dir(const char* path) { return chkDsk(FM) == 0 ? 0 : fileNodeChDirGlo
 
 
 int fileNodeChDirGlobal(char *path){
-    // if(path[0] == '/' && strlen(path) == 1){ fileNodeGoToRoot(); return 1; }
+    if(FM->)
+    fileNodeGoToDirGlobal();
+    if(path[0] == '/' && strlen(path) == 1){ fileNodeGoToRoot(); return 1; }
     if(path[0] == '/') fileNodeGoToRoot();
     char *token, *string, *toFree;
     string = strdup(path);
@@ -103,7 +105,7 @@ int fileNodeMkObjValidated(char *path, int mode, int fileSize){
         int chkdIndx = fileNodeGoDownChk(token);
 
         if(chkdIndx == -1) { fileNodeMkObj(token, mode, fileSize); }
-        fileNodeGoDown(fileNodeGoDownChk(token));
+        if(mode == 1) fileNodeGoDown(fileNodeGoDownChk(token));
     }
     free(toFree);
     return 1;
@@ -130,7 +132,7 @@ int fileNodeMkObj(char *objName, int mode, int file_size){
     FM->heirs[FM->heirsCount - 1].heirsCount = 0;
     OcpdSz += file_size;
     if(mode == 1) fprintf(stdout, "success: created directory %s in %s\n", FM->heirs[FM->heirsCount - 1].name, FM->absolute_path);
-    if(mode == 0) fprintf(stdout, "success: created file %s with size %d bytes\n", FM->heirs[FM->heirsCount - 1].absolute_path, FM->heirs[FM->heirsCount - 1].size);
+    if(mode == 0) fprintf(stdout, "success: created file %s with size %lld bytes\nFree space: %d bytes\n", FM->heirs[FM->heirsCount - 1].absolute_path, FM->heirs[FM->heirsCount - 1].size, DskSz - file_size);
     return 1;
 }
 
@@ -155,16 +157,17 @@ int create(int disk_size){
     }
 }
 
-void fileNodeGoDown(int heirIndx){
+int fileNodeGoDown(int heirIndx){
     fprintf(stdout, "chdir %s %s\n", FM->absolute_path, FM->heirs[heirIndx].absolute_path);
     FM = &FM->heirs[heirIndx];
+    return 1;
 }
 
 int fileNodeGoDownChk(char *path){
     // fprintf(stdout, "chk is exists %s in %s\n", path, FM->absolute_path);
     for(int i = 0; i < FM->heirsCount; ++i){
         // fprintf(stdout, "CHECKING ---%s--- ===%s===\n", FM->heirs[i].name, path);
-        if(strcmp(FM->heirs[i].name, path) == 0){
+        if(strcmp(FM->heirs[i].name, path) == 0 && FM->heirs[i].isDir == 1){
             // fprintf(stdout, "%s exists in %s\n", path, FM->absolute_path);
             return i;
         }
