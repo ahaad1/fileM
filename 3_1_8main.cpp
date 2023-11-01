@@ -15,10 +15,8 @@ int main()
         fm.create_dir("/cat/meow");
         
         fm.change_dir("/cat");
-        // fm.change_dir("/");
-        // fm.change_dir("/cat/catcat");
-        // fm.create_dir("catdir");
-        // fileNodeGoToRoot();
+        fm.create_dir("woof");
+        fm.change_dir("/");
         // fm.create_dir("cat/says");
         // fm.create_dir("cat/says/meow");
         // fm.create_dir("cat/doesnt");
