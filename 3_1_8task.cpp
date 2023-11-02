@@ -1,7 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <iostream>
 #include "os_file.h"
+
+#define SWAP(T, a, b) do { T tmp = a; a = b; b = tmp; } while (0)
 
 typedef struct fileNode
 {
@@ -14,6 +17,7 @@ typedef struct fileNode
     char* absolute_path;
 
 } fileNode;
+
 
 int DskSz = -1, OcpdSz = 0; fileNode *FM = NULL; char *CUR_DIR = NULL;
 
@@ -38,11 +42,24 @@ void printDir();
 int create_dir(const char* path){ return chkDsk(FM) == 0 ? 0 : fileNodeMkObjValidated((char*)path,1,0); }
 int create_file(const char* path, int file_size) { return chkDsk(FM) == 0 ? 0 : fileNodeMkObjValidated((char*)path, 0, file_size); }
 int change_dir(const char* path) { return chkDsk(FM) == 0 ? 0 : fileNodeChDirGlobal((char*)path); }
+int remove(const char* path, int recursive);
+
+int remove(const char* path, int recursive){
+    if(path[0] != '/') fileNodeGoToDirGlobal();
+    if(path[0] == '/' && strlen(path) == 1) return 0;
+    if(path[0] == '/' && strlen(path) > 1) fileNodeGoToRoot();
+
+    // while()
+
+    SWAP(fileNode*, FM->heirs[0], FM->heirs[1]); //???
+    return 1;
+}
 
 
 int fileNodeChDirGlobal(char *path){
-    fileNodeGoToDirGlobal();
     if(path[0] == '/' && strlen(path) == 1){ fileNodeGoToRoot(); return 1; }
+    if(path[0]!='/') fileNodeGoToDirGlobal();
+    // if(path[0] == '/' && strlen(path) == 1){ fileNodeGoToRoot(); return 1; }
     if(path[0] == '/') fileNodeGoToRoot();
     char *token, *string, *toFree;
     string = strdup(path);
@@ -72,6 +89,7 @@ int fileNodeGoToDirGlobal(){
     fileNodeGoToRoot();
     char *token, *string, *toFree;
     string = strdup(CUR_DIR);
+    
     if(string == NULL) return 0;
     toFree = string;
     while((token = strsep(&string, "/")) != NULL){
@@ -119,6 +137,7 @@ int fileNodeMkObjValidated(char *path, int mode, int fileSize){
 //mode: 0 - file , 1 - directory
 int fileNodeMkObj(char *objName, int mode, int file_size){
     if(strcmp(objName, "") == 0 || strlen(objName) <= 0 || objName[0] == '\0') return 0;
+    if(fileNodeGoDownChk(objName) >= 0) return 0;
     ++FM->heirsCount;
     if(FM->heirs == NULL) FM->heirs = (fileNode**)malloc(sizeof(fileNode*));
     else FM->heirs = (fileNode**)realloc(FM->heirs, sizeof(fileNode*) * FM->heirsCount);
@@ -131,6 +150,7 @@ int fileNodeMkObj(char *objName, int mode, int file_size){
     strcat(newFm->absolute_path, "/");
     newFm->heirs = NULL;
     newFm->heirsCount = 0;
+    newFm->size = file_size;
     FM->heirs[FM->heirsCount - 1] = newFm;
     OcpdSz += file_size;
     if(mode == 1) fprintf(stdout, "success: created directory %s in %s\n", FM->heirs[FM->heirsCount - 1]->name, FM->absolute_path);
@@ -160,7 +180,7 @@ int create(int disk_size){
 }
 
 int fileNodeGoDown(int heirIndx){
-    if(FM->heirs[heirIndx]->isDir == 0) return 0;
+    if(heirIndx == -1 || FM->heirs[heirIndx]->isDir == 0) return 0;
     // fprintf(stdout, "chdir %s %s\n", FM->absolute_path, FM->heirs[heirIndx].absolute_path);
     FM = FM->heirs[heirIndx];
     return 1;
@@ -168,7 +188,7 @@ int fileNodeGoDown(int heirIndx){
 
 int fileNodeGoDownChk(char *path){
     for(int i = 0; i < FM->heirsCount; ++i){
-        if(strcmp(FM->heirs[i]->name, path) == 0 && FM->heirs[i]->isDir == 1){
+        if(strcmp(FM->heirs[i]->name, path) == 0){
             return i;
         }
     }
@@ -182,7 +202,7 @@ int fileNodeGoUp(char *path){
 
 void fileNodeGoToRoot(){
     while(FM->parent != NULL){
-        // fprintf(stdout, "going to / { %s %s }\n", FM->absolute_path, FM->parent->absolute_path);
+        fprintf(stdout, "going to / { %s %s }\n", FM->absolute_path, FM->parent->absolute_path);
         FM = FM->parent;
     }
 }
@@ -195,7 +215,10 @@ void printDir(){
     fprintf(stdout,"======\n");
 }
 
-void get_cur_dir(char *dst){ strcpy(dst, CUR_DIR); }
+void get_cur_dir(char *dst){ 
+    // if(CUR_DIR != NULL) dst = strdup(CUR_DIR); 
+    fprintf(stdout, "CUR_DIR: %s\n", CUR_DIR);
+}
 
 int chkDsk(fileNode *fn){ return fn == NULL ? 0 : 1; }
 
