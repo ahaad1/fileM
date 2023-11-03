@@ -36,15 +36,16 @@ int fileNodeGoDownChk(char *path);
 int fileNodeGoUp(char *path);
 int fileNodeMkObjValidated(char *path, int mode, int fileSize);
 int fileNodeGoToDirGlobal();
+int fileNodeRmMode(char* path, int rec);
 void fileNodeGoToRoot();
 void printDir();
 
 int create_dir(const char* path){ return chkDsk(FM) == 0 ? 0 : fileNodeMkObjValidated((char*)path,1,0); }
 int create_file(const char* path, int file_size) { return chkDsk(FM) == 0 ? 0 : fileNodeMkObjValidated((char*)path, 0, file_size); }
 int change_dir(const char* path) { return chkDsk(FM) == 0 ? 0 : fileNodeChDirGlobal((char*)path); }
-int remove(const char* path, int recursive);
+int remove(const char* path, int recursive){ return chkDsk(FM) == 0 ? 0 : fileNodeRmMode((char*)path, recursive); }
 
-int remove(const char* path, int recursive){
+int fileNodeRmMode(char* path, int rec){
     if(path[0] != '/') fileNodeGoToDirGlobal();
     if(path[0] == '/' && strlen(path) == 1) return 0;
     if(path[0] == '/' && strlen(path) > 1) fileNodeGoToRoot();
@@ -57,6 +58,8 @@ int remove(const char* path, int recursive){
 
 
 int fileNodeChDirGlobal(char *path){
+    if(strcmp(path, "..") == 0 || strlen(path) == 2){ if(FM->parent != NULL) {FM = FM->parent; return 1;} else{return 0;} }
+    if(strcmp(path, ".") == 0 || strlen(path) == 1) return 1;
     if(path[0] == '/' && strlen(path) == 1){ fileNodeGoToRoot(); return 1; }
     if(path[0]!='/') fileNodeGoToDirGlobal();
     // if(path[0] == '/' && strlen(path) == 1){ fileNodeGoToRoot(); return 1; }
@@ -67,6 +70,8 @@ int fileNodeChDirGlobal(char *path){
         toFree = string;
         while((token = strsep(&string, "/")) != NULL){
             if(strcmp(token, "") == 0 || strlen(token) <= 0 || token[0] == '\0') continue;
+            if(strcmp(token, "..") == 0 || strlen(token) == 2){ if(FM->parent != NULL) FM = FM->parent; continue; }
+            if(strcmp(token, ".") == 0 || strlen(token) == 1) continue;
             int chkdTokenIndx = fileNodeGoDownChk(token);
             if(chkdTokenIndx >= 0){
                 fprintf(stdout, "chdir global: %s %s\n", CUR_DIR, FM->heirs[chkdTokenIndx]->absolute_path);
@@ -95,14 +100,8 @@ int fileNodeGoToDirGlobal(){
     while((token = strsep(&string, "/")) != NULL){
         if(strcmp(token, "") == 0 || strlen(token) <= 0 || token[0] == '\0') continue;
         int chkdTokenIndx = fileNodeGoDownChk(token);
-        if(chkdTokenIndx >= 0){
-            // fprintf(stdout, "current dir: %s %s\n", CUR_DIR, FM->heirs[chkdTokenIndx].absolute_path);
-            fileNodeGoDown(chkdTokenIndx);
-        }
-        else{
-            // fprintf(stdout, "current dir error: no such directory %s in %s\n", token, FM->absolute_path);
-            return 0;
-        }
+        if(chkdTokenIndx >= 0){ fileNodeGoDown(chkdTokenIndx); }
+        else{ return 0; }
     }
     free(toFree);
     return 1;
@@ -181,7 +180,6 @@ int create(int disk_size){
 
 int fileNodeGoDown(int heirIndx){
     if(heirIndx == -1 || FM->heirs[heirIndx]->isDir == 0) return 0;
-    // fprintf(stdout, "chdir %s %s\n", FM->absolute_path, FM->heirs[heirIndx].absolute_path);
     FM = FM->heirs[heirIndx];
     return 1;
 }
@@ -228,7 +226,7 @@ void setup_file_manager(file_manager_t *fm) {
     fm->create_file = create_file;
     fm->change_dir = change_dir;
     fm->get_cur_dir = get_cur_dir;
-    // fm->destroy = fm_destroy;
-    // fm->remove = fm_remove;
-    // fm->move = fm_move;
+    fm->remove = remove;
+    // fm->destroy = destroy;
+    // fm->move = move;
 }
