@@ -74,7 +74,6 @@ int fileNodeChDirGlobal(char *path){
     char *token, *string, *toFree;
     if(path == NULL) return 0;
     string = strdup(path);
-    if(string == NULL) return 0;
     toFree = string;
     while((token = strsep(&string, "/")) != NULL){ if(!fileNodeMoveFM(0, token)){ fprintf(stdout ,"cd error: %s does not exist in %s\n", token, FM->absolute_path); return 0; } }
     free(toFree);
