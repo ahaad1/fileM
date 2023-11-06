@@ -218,5 +218,4 @@ void setup_file_manager(file_manager_t *fm) {
     fm->get_cur_dir = get_cur_dir;
     fm->remove = remove;
     // fm->destroy = destroy;
-    // fm->move = move;
 }
