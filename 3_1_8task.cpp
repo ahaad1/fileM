@@ -58,10 +58,9 @@ int fileNodeRmMode(char* path, int rec){
 
 //mode = 0 working with absolute dir : with local
 int fileNodeMoveFM(int mode, char *path){
-    if(mode == 0 || strcmp(FM->absolute_path, CUR_DIR) != 0 || strlen(path) > 1) fileNodeGoToDirGlobal();
+    if(mode == 0 || strcmp(FM->absolute_path, CUR_DIR) != 0 || strlen(path) > 1) { return fileNodeGoToDirGlobal(); }
     if((strcmp(path, "..") == 0 && strlen(path) == 2) && FM->parent != NULL){ FM = FM->parent; return 1; }
     else if(strcmp(path, ".") == 0 && strlen(path) == 2) return 1;
-    // if(path[0] == '/' && strlen(path) == 1){ fileNodeGoToRoot(); return 1; }
     else if(strcmp(path, "/") == 0 && strlen(path) == 1){ fileNodeGoToRoot(); return 1; }
     else if(strlen(path) > 0){
         int chkdIndx = fileNodeGoDownChk(path);
@@ -77,16 +76,13 @@ int fileNodeChDirGlobal(char *path){
     string = strdup(path);
     if(string == NULL) return 0;
     toFree = string;
-    while((token = strsep(&string, "/")) != NULL){
-        if(fileNodeMoveFM(0, token)){
-            free(CUR_DIR);
-            CUR_DIR = strdup(FM->absolute_path);
-        }
-        else { fprintf(stdout ,"cd error: %s does not exist in %s\n", token, FM->absolute_path); return 0; }
-    }
+    while((token = strsep(&string, "/")) != NULL){ if(!fileNodeMoveFM(0, token)){ fprintf(stdout ,"cd error: %s does not exist in %s\n", token, FM->absolute_path); return 0; } }
     free(toFree);
     free(token);
     free(string);
+    free(CUR_DIR);
+    CUR_DIR = strdup(FM->absolute_path);
+
     return 1;
 }
 
@@ -104,6 +100,8 @@ int fileNodeGoToDirGlobal(){
         else{ return 0; }
     }
     free(toFree);
+    free(token);
+    free(string);
     return 1;
 }
 
@@ -111,7 +109,7 @@ int fileNodeGoToDirGlobal(){
 int fileNodeMkObjValidated(char *path, int mode, int fileSize){
     char *token, *string, *toFree;
     string = strdup(path);
-    if(string == NULL) return 0;
+    if(string == NULL) { return 0; }
 
     if(path[0] == '/') { fileNodeGoToRoot(); }
     if(path[0] != '/') { fileNodeGoToDirGlobal(); }
@@ -125,6 +123,8 @@ int fileNodeMkObjValidated(char *path, int mode, int fileSize){
         fileNodeGoDown(fileNodeGoDownChk(token));
     }
     free(toFree);
+    free(string);
+    free(token);
     return 1;
 }
 
