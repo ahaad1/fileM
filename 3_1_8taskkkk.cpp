@@ -1,8 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-// #include <iostream>
 #include "os_file.h"
+
+#define COLOR_RESET  "\x1b[0m"
+#define COLOR_RED    "\x1b[31m"
+#define COLOR_GREEN  "\x1b[32m"
 
 #define SWAP(T, a, b) do { T tmp = a; a = b; b = tmp; } while (0)
 
@@ -14,7 +17,8 @@ typedef struct fileNode
     int heirsCount;
     fileNode* parent;
     fileNode** heirs; //subdirs
-    char* absolute_path;
+    char* 
+    absolute_path;
 
 } fileNode;
 
@@ -77,7 +81,7 @@ int fileNodeChDirGlobal(char *path){
     strcat(path, "\0");
     string = strdup(path);
     toFree = string;
-    while((token = strsep(&string, "/")) != NULL){ if(!fileNodeMoveFM(0, token)){ fprintf(stdout ,"cd error: %s does not exist in %s\n", token, FM->absolute_path); return 0; } }
+    while((token = strsep(&string, "/")) != NULL){ if(!fileNodeMoveFM(0, token)){ /*fprintf(stdout ,"cd error: %s does not exist in %s\n", token, FM->absolute_path);*/ return 0; } }
     free(toFree);
     free(token);
     free(string);
@@ -119,9 +123,9 @@ int fileNodeMkObjValidated(char *path, int mode, int fileSize){
     while((token = strsep(&string, "/")) != NULL){
         if(strcmp(token, "") == 0 || strlen(token) <= 0 || token[0] == '\0') continue;
         int chkdIndx = fileNodeGoDownChk(token);
-        if(chkdIndx == -1 && mode == 0 && (fileSize > DskSz || fileSize + OcpdSz > DskSz || fileSize < 0)) {  fprintf(stdout, "error: file not created\nwrong file size %d\n", fileSize); return 0; }
+        if(chkdIndx == -1 && mode == 0 && (fileSize > DskSz || fileSize + OcpdSz > DskSz || fileSize < 0)) {  /*fprintf(stdout, "error: file not created\nwrong file size %d\n", fileSize);*/ return 0; }
         if(chkdIndx == -1) fileNodeMkObj(token, mode, fileSize); 
-        printDir();
+        // printDir();
         fileNodeGoDown(fileNodeGoDownChk(token));
     }
     free(toFree);
@@ -132,23 +136,36 @@ int fileNodeMkObjValidated(char *path, int mode, int fileSize){
 
 //mode: 0 - file , 1 - directory
 int fileNodeMkObj(char *objName, int mode, int file_size){
-    if(strcmp(objName, "") == 0 || strlen(objName) <= 0 || objName[0] == '\0') return 0;
+    fprintf(stdout, "\n===START MKING OBG===\n");
+    if(strcmp(objName, "") == 0 || strlen(objName) <= 0 || objName[0] == '\0'){
+        fprintf(stdout,"BAD STR '%s' ADDR %p", objName, &objName);
+        fprintf(stdout, "\n===END MKING OBJ===\n");
+        return 0;
+    }
     if(fileNodeGoDownChk(objName) >= 0) return 0;
     ++FM->heirsCount;
     if(FM->heirs == NULL) FM->heirs = (fileNode**)malloc(sizeof(fileNode*));
     else FM->heirs = (fileNode**)realloc(FM->heirs, sizeof(fileNode*) * FM->heirsCount);
     fileNode *newFm = (fileNode*)malloc(sizeof(fileNode));
+    
+    fprintf(stdout, COLOR_GREEN"\tNEW FILE_NODE %p\n", &newFm);
     newFm->name = strdup(objName);
     newFm->parent = FM;
     newFm->isDir = mode;
-    newFm->absolute_path = strdup(FM->absolute_path);
-    newFm->absolute_path = (char*)realloc(newFm->absolute_path, sizeof(char) * (strlen(newFm->absolute_path) + strlen(objName) + strlen("/\0") ));
+    newFm->absolute_path = (char*)calloc(sizeof(char), strlen(FM->absolute_path) + strlen(newFm->name) + strlen("/") + 1);
+    strcat(newFm->absolute_path, FM->absolute_path);
     strcat(newFm->absolute_path, objName);
     strcat(newFm->absolute_path, "/");
-    newFm->heirs = NULL;
+    newFm->heirs = NULL; 
     newFm->heirsCount = 0;
     newFm->size = file_size;
+    fprintf(stdout,  "\tEND JOB MKING NEW FM\n\n\tINFO:\n\t\tname: %s %p\n\t\tparent: %p\n\t\tisDir: %d %p\n\t\tabsolute path: %s %p\n\t\tCHILDs: %p\n\t\tCHILDs count: %d %p\n\t\tsize: %llu %p\n\n" , newFm->name, &newFm->name, &newFm->parent, newFm->isDir, &newFm->isDir, newFm->absolute_path, &newFm->absolute_path, &newFm->heirs, newFm->heirsCount, &newFm->heirsCount, newFm->size, &newFm->size);
+    fprintf(stdout, "\tNEW FILE_NODE addr %p\n", &newFm);
     FM->heirs[FM->heirsCount - 1] = newFm;
+    fprintf(stdout, "\tNEW FM addr: %p\n\n", &newFm);
+    fprintf(stdout, "\tFM->heirs[...] addr: %p\n\n", FM->heirs[FM->heirsCount - 1]);
+    fprintf(stdout, COLOR_RESET"");
+
     OcpdSz += file_size;
     if(mode == 1) fprintf(stdout, "success: created directory %s in %s\n", FM->heirs[FM->heirsCount - 1]->name, FM->absolute_path);
     if(mode == 0) fprintf(stdout, "success: created file %s with size %lld bytes\nFree space: %d bytes\n", FM->heirs[FM->heirsCount - 1]->name, FM->heirs[FM->heirsCount - 1]->size, DskSz - file_size);
@@ -194,7 +211,7 @@ int fileNodeGoDownChk(char *path){
 
 void fileNodeGoToRoot(){
     while(FM->parent != NULL){
-        fprintf(stdout, "going to / { %s %s }\n", FM->absolute_path, FM->parent->absolute_path);
+        // fprintf(stdout, "going to / { %s %s }\n", FM->absolute_path, FM->parent->absolute_path);
         FM = FM->parent;
     }
 }

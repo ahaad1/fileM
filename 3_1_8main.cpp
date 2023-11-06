@@ -8,8 +8,10 @@ int main()
         file_manager_t fm;
         setup_file_manager(&fm);
         fm.create(42069);
-        fm.create_dir("cat");
         fm.create_dir("cat/says");
+        fm.create_dir("cat1");
+        fm.create_dir("ca2");
+        fm.create_dir("cat/////////says");
         fm.create_dir("cat/says/meow");
         fm.create_dir("cat/doesnt");
         fm.create_dir("cat/doesnt/says");
