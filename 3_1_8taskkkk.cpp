@@ -147,7 +147,10 @@ int fileNodeMkObj(char *objName, int mode, int file_size){
         // fprintf(stdout, "\n===END MKING OBJ===\n");
         return 0;
     }
-    if(fileNodeGoDownChk(objName) >= 0) return 0;
+    if(fileNodeGoDownChk(objName) >= 0){ 
+        fprintf(stdout, "error: %s already exists in %s\n", objName, FM->absolute_path);
+        return 0; 
+    }
     ++FM->heirsCount;
     if(FM->heirs == NULL) FM->heirs = (fileNode**)malloc(sizeof(fileNode*));
     else FM->heirs = (fileNode**)realloc(FM->heirs, sizeof(fileNode*) * FM->heirsCount);
