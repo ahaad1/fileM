@@ -119,13 +119,8 @@ int fileNodeMkObjValidated(char *path, int mode, int fileSize){
     while((token = strsep(&string, "/")) != NULL){
         if(strcmp(token, "") == 0 || strlen(token) <= 0 || token[0] == '\0') continue;
         int chkdIndx = fileNodeGoDownChk(token);
-        if(chkdIndx == -1) { 
-            if(fileSize > DskSz || fileSize + OcpdSz > DskSz || fileSize < 0) {
-                fprintf(stdout, "error: file not created\nwrong file size %d\n", fileSize);
-                return 0;
-            }
-            fileNodeMkObj(token, mode, fileSize); 
-        }
+        if(chkdIndx == -1 && mode == 0 && (fileSize > DskSz || fileSize + OcpdSz > DskSz || fileSize < 0)) {  fprintf(stdout, "error: file not created\nwrong file size %d\n", fileSize); return 0; }
+        if(chkdIndx == -1) fileNodeMkObj(token, mode, fileSize); 
         printDir();
         fileNodeGoDown(fileNodeGoDownChk(token));
     }
