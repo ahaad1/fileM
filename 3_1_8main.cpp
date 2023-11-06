@@ -19,9 +19,6 @@ int main()
         fm.create_dir("/henpecked_numbers");
         fm.create_dir("/henpecked_numbers/69");
 
-        fm.create_file("cat.meow", 10);
-        fm.create_file("cat.meow", 10);
-        fm.create_file("cat.meow", 10);
         fm.change_dir("cat/says");
         fm.change_dir("/henpecked_numbers/69");
         fm.change_dir("/");
@@ -30,7 +27,6 @@ int main()
         fm.create_file("/henpecked_numbers/69/poooof.rrr", 1212);
         fm.change_dir("..");
         fm.get_cur_dir((char*)"");
-        fm.change_dir("../cat");
         printDir();
     return 0;
 }
