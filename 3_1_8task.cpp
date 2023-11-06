@@ -33,10 +33,10 @@ int fileNodeMkObj(char *path, int mode, int file_size);
 int fileNodeChDirGlobal(char *path);
 int fileNodeGoDown(int heirIndx);
 int fileNodeGoDownChk(char *path);
-int fileNodeGoUp(char *path);
 int fileNodeMkObjValidated(char *path, int mode, int fileSize);
 int fileNodeGoToDirGlobal();
 int fileNodeRmMode(char* path, int rec);
+int fileNodeMoveFM(int mode, char *path);
 void fileNodeGoToRoot();
 void printDir();
 
@@ -56,13 +56,32 @@ int fileNodeRmMode(char* path, int rec){
     return 1;
 }
 
+int fileNodeMoveFM(int mode, char *path){
+    if((strcmp(path, "..") == 0 && strlen(path) == 2) && FM->parent != NULL){ FM = FM->parent; return 1; }
+    else if(strcmp(path, ".") == 0 && strlen(path) == 2) return 1;
+    // if(path[0] == '/' && strlen(path) == 1){ fileNodeGoToRoot(); return 1; }
+    else if(strcmp(path, "/") == 0 && strlen(path) == 1){ fileNodeGoToRoot(); return 1; }
+    else if(strlen(path) > 0){
+        int chkdIndx = fileNodeGoDownChk(path);
+        if( chkdIndx >= 0) { return fileNodeGoDown(chkdIndx); }
+        else return 0;
+    }
+    else return 0;
+}
 
 int fileNodeChDirGlobal(char *path){
-    if(strcmp(path, "..") == 0 || strlen(path) == 2){ if(FM->parent != NULL) {FM = FM->parent; return 1;} else{return 0;} }
-    if(strcmp(path, ".") == 0 || strlen(path) == 1) return 1;
+    if(strcmp(path, "..") == 0 || strlen(path) == 2){ 
+        if(FM->parent != NULL) {
+            FM = FM->parent; 
+            free(CUR_DIR);
+            CUR_DIR = strdup(FM->absolute_path);
+            return 1;
+        } 
+        else{ return 0; } 
+    }
+    if(strcmp(path, ".") == 0 && strlen(path) == 1) return 1;
     if(path[0] == '/' && strlen(path) == 1){ fileNodeGoToRoot(); return 1; }
     if(path[0]!='/') fileNodeGoToDirGlobal();
-    // if(path[0] == '/' && strlen(path) == 1){ fileNodeGoToRoot(); return 1; }
     if(path[0] == '/') fileNodeGoToRoot();
     char *token, *string, *toFree;
     string = strdup(path);
@@ -79,9 +98,7 @@ int fileNodeChDirGlobal(char *path){
                 free(CUR_DIR);
                 CUR_DIR = strdup(FM->absolute_path);
             }
-            else{
-                fprintf(stdout, "chdir error global: no such directory %s in %s\n", token, FM->absolute_path);
-            }
+            else{ fprintf(stdout, "chdir error global: no such directory %s in %s\n", token, FM->absolute_path); }
         }
         free(toFree);
     }
@@ -184,6 +201,7 @@ int fileNodeGoDown(int heirIndx){
     return 1;
 }
 
+//returns index if child exists : -1 if not
 int fileNodeGoDownChk(char *path){
     for(int i = 0; i < FM->heirsCount; ++i){
         if(strcmp(FM->heirs[i]->name, path) == 0){
@@ -191,11 +209,6 @@ int fileNodeGoDownChk(char *path){
         }
     }
     return -1;
-}
-
-int fileNodeGoUp(char *path){
-    if(FM->parent!= NULL){ FM = FM->parent; return 1; }
-    return 0;
 }
 
 void fileNodeGoToRoot(){

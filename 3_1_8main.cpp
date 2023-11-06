@@ -28,8 +28,9 @@ int main()
         fm.get_cur_dir((char*)"");
         
         fm.create_file("/henpecked_numbers/69/poooof.rrr", 1212);
-        fm.change_dir("/");
         fm.change_dir("..");
+        fm.get_cur_dir((char*)"");
+        fm.change_dir("../cat");
         printDir();
     return 0;
 }
