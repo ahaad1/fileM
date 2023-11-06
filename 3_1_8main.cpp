@@ -8,8 +8,7 @@ int main()
         file_manager_t fm;
         setup_file_manager(&fm);
         fm.create(42069);
-        fm.create_dir("cat/says");
-        fm.create_dir("cat1");
+        fm.get_cur_dir((char*)"");
         fm.create_dir("ca2");
         fm.create_dir("cat/////////says");
         fm.create_dir("cat/says/meow");
@@ -23,7 +22,6 @@ int main()
 
         fm.change_dir("cat/says");
         fm.change_dir("/henpecked_numbers/69");
-        fm.get_cur_dir((char*)"");
         fm.change_dir("/");
         fm.get_cur_dir((char*)"");
         
