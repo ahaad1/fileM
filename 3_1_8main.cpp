@@ -21,6 +21,7 @@ int main()
 
         fm.change_dir("cat/says");
         fm.change_dir("/henpecked_numbers/69");
+        fm.get_cur_dir((char*)"");
         fm.change_dir("/");
         fm.get_cur_dir((char*)"");
         

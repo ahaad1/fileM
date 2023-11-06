@@ -58,7 +58,7 @@ int fileNodeRmMode(char* path, int rec){
 
 //mode = 0 working with absolute dir : with local
 int fileNodeMoveFM(int mode, char *path){
-    if(mode == 0) fileNodeGoToDirGlobal();
+    if(mode == 0 || strcmp(FM->absolute_path, CUR_DIR) != 0 || strlen(path) > 1) fileNodeGoToDirGlobal();
     if((strcmp(path, "..") == 0 && strlen(path) == 2) && FM->parent != NULL){ FM = FM->parent; return 1; }
     else if(strcmp(path, ".") == 0 && strlen(path) == 2) return 1;
     // if(path[0] == '/' && strlen(path) == 1){ fileNodeGoToRoot(); return 1; }
@@ -72,19 +72,6 @@ int fileNodeMoveFM(int mode, char *path){
 }
 
 int fileNodeChDirGlobal(char *path){
-    // if(strcmp(path, "..") == 0 || strlen(path) == 2){ 
-    //     if(FM->parent != NULL) {
-    //         FM = FM->parent; 
-    //         free(CUR_DIR);
-    //         CUR_DIR = strdup(FM->absolute_path);
-    //         return 1;
-    //     } 
-    //     else{ return 0; } 
-    // }
-    // if(strcmp(path, ".") == 0 && strlen(path) == 1) return 1;
-    // if(path[0] == '/' && strlen(path) == 1){ fileNodeGoToRoot(); return 1; }
-    // if(path[0]!='/') fileNodeGoToDirGlobal();
-    // if(path[0] == '/') fileNodeGoToRoot();
     char *token, *string, *toFree;
     if(path == NULL) return 0;
     string = strdup(path);
@@ -96,17 +83,6 @@ int fileNodeChDirGlobal(char *path){
             CUR_DIR = strdup(FM->absolute_path);
         }
         else { fprintf(stdout ,"cd error: %s does not exist in %s\n", token, FM->absolute_path); return 0; }
-        // if(strcmp(token, "") == 0 || strlen(token) <= 0 || token[0] == '\0') continue;
-        // if(strcmp(token, "..") == 0 || strlen(token) == 2){ if(FM->parent != NULL) FM = FM->parent; continue; }
-        // if(strcmp(token, ".") == 0 || strlen(token) == 1) continue;
-        // int chkdTokenIndx = fileNodeGoDownChk(token);
-        // if(chkdTokenIndx >= 0){
-        //     fprintf(stdout, "chdir global: %s %s\n", CUR_DIR, FM->heirs[chkdTokenIndx]->absolute_path);
-        //     fileNodeGoDown(chkdTokenIndx);
-        //     free(CUR_DIR);
-        //     CUR_DIR = strdup(FM->absolute_path);
-        // }
-        // else{ fprintf(stdout, "chdir error global: no such directory %s in %s\n", token, FM->absolute_path); }
     }
     free(toFree);
     free(token);
