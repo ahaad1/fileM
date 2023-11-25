@@ -206,7 +206,6 @@ void printDir(){
 }
 
 void get_cur_dir(char *dst){ 
-    // if(CUR_DIR != NULL) dst = strdup(CUR_DIR); 
     fprintf(stdout, "CUR_DIR: %s\n", CUR_DIR);
 }
 
