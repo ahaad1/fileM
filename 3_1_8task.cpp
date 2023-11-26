@@ -33,8 +33,8 @@ void setup_file_manager(file_manager_t *fm);
 int create(int disk_size);
 int create_dir(const char *path);
 
-void iNdMkNode(iNode *_mnInd, iNode *child, iNode *parent, char *objNm, char *fPth, _ushrtint o_type);
-int iNdMkObj(const char *path, _ushrtint o_type);
+void iNdMkNode(iNode *_mnInd, iNode *child, iNode *parent, _ushrtint o_type, _uint o_size);
+int iNdMkObj(const char *path, _ushrtint o_type, _uint o_size);
 int mvIndVrt(const char *path);
 int vldTkn(const char *tkn);
 int iNdCkExst(const char *o_name);
@@ -43,7 +43,8 @@ int chkDsk(iNode *iNd);
 int main()
 {
     create(101010);
-
+    create_dir("/a");
+    create_dir("/a/b");
     return 0;
 }
 
@@ -95,14 +96,16 @@ void iNdMkNode(iNode *_mnInd, iNode *child, iNode *parent, _ushrtint o_type, _ui
     _mnInd->is_dir = o_type;
     if (child != NULL)
     {
-        if (_mnInd->chld == NULL && _mnInd->chldCnt == 0)
-            _mnInd->chld = (iNode **)malloc(sizeof(iNode *) * (++_mnInd->chldCnt));
-        if (_mnInd->chld != NULL && _mnInd->chldCnt > 0)
+        if (_mnInd->chld == NULL)
+            _mnInd->chld = (iNode **)malloc(sizeof(iNode *));
+        if (_mnInd->chld != NULL)
         {
             _mnInd->chld = (iNode **)realloc(_mnInd->chld, sizeof(iNode *) * (++_mnInd->chldCnt));
             _mnInd->chld[_mnInd->chldCnt - 1] = child;
         }
+        printf("created node %s\t%d\t%d\n", child->fPth, o_type, o_size);
     }
+    else _mnInd->chld = NULL;
 }
 
 int create(int disk_size)
@@ -123,10 +126,12 @@ int create(int disk_size)
         fprintf(stderr, "error: memory not allocated. aborting file_manager\n");
         exit(0);
     }
-    iNdMkNode(__ind, NULL, NULL, (char *)"/", (char *)"/", 1);
+    iNdMkNode(__ind, NULL, NULL, 1, 0);
     __dsksz = disk_size;
     __ocpdsz = 0;
     __cwd = strdup("/");
+    __ind->name = strdup("/");
+    __ind->fPth = strdup("/");
     fprintf(stdout, "created file manager with disk size %d bytes\n", __dsksz);
     return 1;
 }
@@ -166,6 +171,8 @@ int vldTkn(const char *tkn)
     for (size_t i = 0; i < strlen(bdSymb); i++) { if (strchr(tkn, bdSymb[i]) != NULL) { return 0; } }
     return 1;
 }
+
+int create_dir(const char* path){ return chkDsk(__ind) == 0 ? 0 : iNdMkObj(path, 1, 0); }
 
 // int mvIndVrt(const char *path)
 // {
