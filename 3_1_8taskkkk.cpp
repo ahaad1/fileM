@@ -93,7 +93,6 @@ int fileNodeChDirGlobal(char *path){
     free(string);
     free(CUR_DIR);
     CUR_DIR = strdup(FM->absolute_path);
-
     return 1;
 }
 
@@ -165,7 +164,7 @@ int fileNodeMkObj(char *objName, int mode, int file_size){
     strcat(newFm->absolute_path, objName);
     strcat(newFm->absolute_path, "/");
     newFm->heirs = NULL; 
-    newFm->heirsCount = 0;  
+    newFm->heirsCount = 0;
     newFm->size = file_size;
     // fprintf(stdout,  "\tEND JOB MKING NEW FM\n\n\tINFO:\n\t\tname: %s %p\n\t\tparent: %p\n\t\tisDir: %d %p\n\t\tabsolute path: %s %p\n\t\tCHILDs: %p\n\t\tCHILDs count: %d %p\n\t\tsize: %llu %p\n\n" , newFm->name, &newFm->name, &newFm->parent, newFm->isDir, &newFm->isDir, newFm->absolute_path, &newFm->absolute_path, &newFm->heirs, newFm->heirsCount, &newFm->heirsCount, newFm->size, &newFm->size);
     // fprintf(stdout, "\tNEW FILE_NODE addr %p\n", &newFm);
