@@ -29,6 +29,7 @@ int create_dir(const char *path);
 void iNdMkObj(iNode *_mnInd, iNode *child, iNode *parent, char *objNm, char *fPth, _ushrtint o_type);
 int iNdMkDir(const char *path);
 int mvIndVrt(const char *path);
+int vldTkn(const char *tkn);
 int chkDsk(iNode *iNd);
 
 int main(){
@@ -41,11 +42,31 @@ int iNdMkDir(const char *path){
 }
 
 int mvIndVrt(const char *path){
-    if(path[0] == '/' && strlen(__ind->fPth) == 1){
-        while(__ind->prnt != NULL) __ind = __ind->prnt;
-        return 0; 
+    if(path[0] == '/'){ while(__ind->prnt != NULL) __ind = __ind->prnt; }
+    else { 
+        while(__ind->prnt != NULL) __ind = __ind->prnt; 
+        char *tkn, *str, *tfr;
+        str = strdup(__cwd);
+        if(str == NULL || path == NULL) return 0;
+        tfr = str;
+        while((tkn = strsep(&str, "/")) != NULL){
+            if(!vldTkn(tkn)) continue;
+            if(strcmp(tkn, ".") == 0) continue;
+            if(strcmp(tkn, "..") == 0) { if(__ind->prnt != NULL ) __ind = __ind->prnt; continue; };
+            for(int i = 0; i < __ind->chldCnt; ++i){
+                if(tkn == __ind->chld[i]->name && __ind->chld[i]->is_dir == 1) {
+                    __ind = __ind->chld[i];
+                    continue;
+                }
+            }
+            free(tfr);
+            free(str);
+            free(tkn);
+            str = strdup(path);
+            tfr = str;
+        }
     }
-    return 1;
+    
 }
 
 // o_type: 1 - folder, 0 - file
@@ -86,3 +107,8 @@ void setup_file_manager(file_manager_t *fm) {
     // fm->destroy = destroy;
 }
 int chkDsk(iNode *iNd){ return iNd == NULL ? 0 : 1; }
+
+int vldTkn(const char *tkn){
+    if(strcmp(tkn, "") == 0 || strlen(tkn) <= 0 || tkn[0] == '\0') return 0;
+    return 1;
+}
