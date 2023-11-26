@@ -33,15 +33,70 @@ int create(int disk_size);
 int create_dir(const char *path);
 int create_file(const char* path, int file_size);
 int change_dir(const char* path);
+int remove(const char* path, int recursive);
 void get_cur_dir(char *dst);
 
 int iNdMkObj(const char *path, _ushrtint o_type, _uint o_size);
 int iNdChDir(const char *path);
 int vldTkn(const char *tkn);
 int iNdCkExst(const char *o_name);
+int iNdRm(const char* path, int recursive);
 int chkDsk(iNode *iNd);
 
 void prnt(iNode **tst1);
+
+int removeNode(iNode *node) {
+    if (node == NULL) { return 0; }
+    for (_uint i = 0; i < node->chldCnt; ++i) { removeNode(node->chld[i]); }
+    fprintf(stdout, "removing node %s\t%s\n", node->name, node->fPth);
+    
+    // removing node
+    free(node->name);
+    free(node->fPth);
+    free(node->chld);
+    free(node);
+
+    return 1; // Успех
+}
+
+int iNdRm(const char* path, int recursive){
+    char *tkn, *str, *tfr;
+    while (__ind->prnt != NULL) __ind = __ind->prnt;
+    if (path[0] == '/') { tfr = str = strdup(path); }
+    if(path[0] != '/'){
+        tfr = str = (char *)calloc(sizeof(char) , (strlen(__cwd) + strlen(path) + 1));
+        strcat(str, __cwd); 
+        strcat(str, path); 
+    }
+    if (path == NULL || str == NULL) return 0;
+
+    while ((tkn = strsep(&str, "/")) != NULL){
+        if (strcmp(tkn, ".") == 0){ continue; } 
+        if (strcmp(tkn, "..") == 0) { if (__ind->prnt != NULL) __ind = __ind->prnt; continue; }
+        if (!vldTkn(tkn)) { continue; }
+        if (!iNdCkExst(tkn)) {
+            fprintf(stdout, "chdir error: dir does not exists { %s }\n", tkn);
+            return 0;
+        }
+    }
+
+    iNode *nodeToDelete = __ind;
+    if (nodeToDelete == NULL) { return 0; } // node not found
+
+    if (!recursive && nodeToDelete->is_dir && nodeToDelete->chldCnt > 0) { return 0; } // rm dir without flag 1
+
+    // removing node , there is no way back
+    int result = removeNode(nodeToDelete);
+
+    if (result) {
+        --nodeToDelete->chldCnt;
+        free(__cwd);
+        __cwd = strdup("/");
+        fprintf(stdout, "removed node %s\n", nodeToDelete->fPth);
+    }
+    free(tfr);
+    return result;
+}
 
 int iNdChDir(const char *path){
     char *tkn, *str, *tfr;
@@ -128,22 +183,10 @@ int iNdMkObj(const char *path, _ushrtint o_type, _uint o_size)
 
 int create(int disk_size)
 {
-    if (chkDsk(__ind))
-    {
-        fprintf(stderr, "error: disk already exists\n");
-        return 0;
-    }
-    if (disk_size <= 0)
-    {
-        fprintf(stderr, "error: bad disk size\n");
-        return 0;
-    }
+    if (chkDsk(__ind)) { fprintf(stderr, "error: disk already exists\n"); return 0; }
+    if (disk_size <= 0) { fprintf(stderr, "error: bad disk size\n"); return 0; }
     __ind = (iNode *)malloc(sizeof(iNode));
-    if (__ind == NULL)
-    {
-        fprintf(stderr, "error: memory not allocated. aborting file_manager\n");
-        exit(0);
-    }
+    if (__ind == NULL) { fprintf(stderr, "error: memory not allocated. aborting file_manager\n"); exit(0); }
     __ind->chld = NULL;
     __ind->chldCnt = 0;
     __ind->fPth = strdup("/");
@@ -165,7 +208,7 @@ void setup_file_manager(file_manager_t *fm)
     fm->create_file = create_file;
     fm->change_dir = change_dir;
     fm->get_cur_dir = get_cur_dir;
-    // fm->remove = remove;
+    fm->remove = remove;
     // fm->destroy = destroy;
 }
 int chkDsk(iNode *iNd) { return iNd == NULL ? 0 : 1; }
@@ -175,10 +218,10 @@ int iNdCkExst(const char *o_name)
 {
     for (_uint i = 0; i < __ind->chldCnt; ++i)
     {
-        if (__ind->chld != NULL && strcmp(__ind->chld[i]->name, o_name) == 0)
-        {
-            __ind = __ind->chld[i];
-            return 1;
+        if (__ind->chld != NULL && strcmp(__ind->chld[i]->name, o_name) == 0) 
+        {  
+            __ind = __ind->chld[i]; 
+            return 1; 
         }
     }
     return 0;
@@ -196,6 +239,7 @@ int vldTkn(const char *tkn)
 int create_dir(const char* path){ return chkDsk(__ind) == 0 ? 0 : iNdMkObj(path, 1, 0); }
 int create_file(const char* path, int file_size) { return chkDsk(__ind) == 0 ? 0 : iNdMkObj(path, 0, file_size); }
 int change_dir(const char* path) { return chkDsk(__ind) == 0 ? 0 : iNdChDir((char*)path); }
+int remove(const char* path, int recursive) { return chkDsk(__ind) == 0 ? 0 : iNdRm(path, recursive); }
 
 void prnt(iNode **tst1) {
     fprintf(stdout,"======\n");
