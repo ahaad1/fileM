@@ -6,7 +6,7 @@ default: all
 
 all: myprogram
 
-myprogram: 3_1_8task.cpp
-	$(CC) $(CFLAGS) -o 3_1_8task 3_1_8task.cpp -fsanitize=address
-	./3_1_8task 
-	$(RM) 3_1_8task
+myprogram: 3_1_8main.cpp
+	$(CC) $(CFLAGS) -o 3_1_8main 3_1_8main.cpp -fsanitize=address
+	./3_1_8main  
+	$(RM) 3_1_8main 

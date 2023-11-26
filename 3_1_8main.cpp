@@ -5,33 +5,15 @@
 
 int main()
 {
-        file_manager_t fm;
-        setup_file_manager(&fm);
-        fm.create(42069);
-        fm.get_cur_dir((char*)"");
-        fm.create_dir("ca2");
-        fm.create_dir("cat/////////says");
-        fm.create_dir("cat/says/meow");
-        fm.create_dir("cat/doesnt");
-        fm.create_dir("cat/doesnt/says");
-        fm.create_dir("cat/doesnt/says/woof");
-        fm.create_dir("/dream_numbers");
-        fm.create_dir("/dream_numbers/420");
-        fm.create_dir("/henpecked_numbers");
-        fm.create_dir("/henpecked_numbers/69");
-
-        fm.change_dir("cat/says");
-        fm.change_dir("/henpecked_numbers/69");
-        fm.change_dir("/");
-        fm.get_cur_dir((char*)"");
-        
-        fm.create_file("/henpecked_numbers/69/poooof.rrr", 1212);
-        fm.change_dir("/cat");
-        fm.get_cur_dir((char*)"");
-        fm.create_dir("/cat");
-        fm.change_dir("..");
-        fm.get_cur_dir((char*)"");
-        fm.create_file("/henpecked_numbers/69/poooof.rrr/qwe.txt", 1212);
-        printDir();
+    file_manager_t fm;
+    setup_file_manager(&fm);
+    fm.create(101010);
+    fm.create_dir("/a");
+    fm.create_dir("/a/b");
+    fm.create_file("/a/a.txt", 10);
+    fm.create_dir("/a/b/c");
+    fm.create_file("/a/qwe.txt", 100);
+    fm.change_dir("/a/b");
+    prnt(&__ind);
     return 0;
 }
