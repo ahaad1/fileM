@@ -51,12 +51,12 @@ int iNdChDir(const char *path){
     }
     if(path[0] != '/'){
         tfr = str = (char *)calloc(sizeof(char) , (strlen(__cwd) + strlen(path) + 1));
-        strcat(str, __cwd); strcat(tfr, __cwd);
-        strcat(str, path); strcat(tfr, path);
+        strcat(str, __cwd); 
+        strcat(str, path); 
     }
     if (path == NULL || str == NULL) return 0;
     while ((tkn = strsep(&str, "/")) != NULL){
-        if (strcmp(tkn, ".") == 0) continue;
+        if (strcmp(tkn, ".") == 0){ continue; } 
         if (strcmp(tkn, "..") == 0) { if (__ind->prnt != NULL) __ind = __ind->prnt; continue; }
         if (!vldTkn(tkn)) { continue; }
         if (!iNdCkExst(tkn)) {
@@ -64,12 +64,12 @@ int iNdChDir(const char *path){
             return 0;
         }
     }
-    printf("---%s---\n", __ind->fPth);
+    printf("cd %s %s\n", __cwd, __ind->fPth);
     free(__cwd);
+    __cwd = strdup(__ind->fPth);
     free(tkn);
     free(str);
     free(tfr);
-    __cwd = strdup(__ind->fPth);
     return 1;
 }
 
@@ -84,8 +84,8 @@ int iNdMkObj(const char *path, _ushrtint o_type, _uint o_size)
     if (path[0] != '/')
     {
         tfr = newpth = (char *)malloc(sizeof(char) * (strlen(__cwd) + strlen(path) + 1));
-        strcat(newpth, __cwd); strcat(tfr, __cwd);
-        strcat(newpth, path); strcat(tfr, path);
+        strcat(newpth, __cwd);
+        strcat(newpth, path);
     }
 
     if (newpth == NULL || path == NULL) return 0;
@@ -117,7 +117,7 @@ int iNdMkObj(const char *path, _ushrtint o_type, _uint o_size)
             strcat(newFm->fPth, "/");
             __ind->chld[__ind->chldCnt - 1] = newFm;
             __ocpdsz += o_size;
-            fprintf(stdout, "created %s\t%d\t%d\n", newFm->fPth, newFm->is_dir, newFm->objSz);
+            fprintf(stdout, "created %s in %s\t%d\t%d\n", newFm->name, __ind->fPth, newFm->is_dir, newFm->objSz);
         }
     }
     free(tfr);
@@ -151,7 +151,10 @@ int create(int disk_size)
     __ind->name = strdup("/");
     __ind->objSz = 0;
     __ind->prnt = NULL;
+
     __cwd = strdup("/");
+    // __cwd = (char*)calloc(sizeof(char), strlen("/") + 1);
+    // strcpy(__cwd, "/");
     
     __dsksz = disk_size;
     __ocpdsz = 0;
@@ -201,7 +204,7 @@ int change_dir(const char* path) { return chkDsk(__ind) == 0 ? 0 : iNdChDir((cha
 
 void prnt(iNode **tst1) {
     fprintf(stdout,"======\n");
-    for(int i = 0; i < __ind->chldCnt; ++i){
+    for(_uint i = 0; i < __ind->chldCnt; ++i){
         fprintf(stdout, "%s\t%s\n",__ind->fPth, __ind->chld[i]->fPth);
     }
     fprintf(stdout,"======\n");
