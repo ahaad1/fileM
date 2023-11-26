@@ -33,8 +33,8 @@ int create(int disk_size);
 int create_dir(const char *path);
 int create_file(const char* path, int file_size);
 int change_dir(const char* path);
+void get_cur_dir(char *dst);
 
-// void iNdMkNode(iNode *_mnInd, iNode *child, iNode *parent, _ushrtint o_type, _uint o_size);
 int iNdMkObj(const char *path, _ushrtint o_type, _uint o_size);
 int iNdChDir(const char *path);
 int vldTkn(const char *tkn);
@@ -151,14 +151,9 @@ int create(int disk_size)
     __ind->name = strdup("/");
     __ind->objSz = 0;
     __ind->prnt = NULL;
-
     __cwd = strdup("/");
-    // __cwd = (char*)calloc(sizeof(char), strlen("/") + 1);
-    // strcpy(__cwd, "/");
-    
     __dsksz = disk_size;
     __ocpdsz = 0;
-    
     fprintf(stdout, "created file manager with disk size %d bytes\n", __dsksz);
     return 1;
 }
@@ -169,7 +164,7 @@ void setup_file_manager(file_manager_t *fm)
     fm->create_dir = create_dir;
     fm->create_file = create_file;
     fm->change_dir = change_dir;
-    // fm->get_cur_dir = get_cur_dir;
+    fm->get_cur_dir = get_cur_dir;
     // fm->remove = remove;
     // fm->destroy = destroy;
 }
@@ -208,4 +203,8 @@ void prnt(iNode **tst1) {
         fprintf(stdout, "%s\t%s\n",__ind->fPth, __ind->chld[i]->fPth);
     }
     fprintf(stdout,"======\n");
+}
+
+void get_cur_dir(char *dst){ 
+    fprintf(stdout, "CUR_DIR: %s\n", __cwd);
 }
