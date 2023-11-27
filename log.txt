@@ -1,0 +1,65 @@
+created file manager with disk size 101010 bytes
+created a in /	1	0
+created b in /a/	1	0
+created a.txt in /a/	0	10
+cd / /a/
+chdir error: dir does not exists { a.txt }
+created c in /a/b/	1	0
+created qwe.txt in /a/	0	100
+cd /a/ /a/
+chdir error: dir does not exists { a }
+created Desktop in /	1	0
+created Documents in /	1	0
+created Downloads in /	1	0
+created file_Manager in /	1	0
+cd /a/ /Desktop/
+created lesson in /Desktop/	1	0
+created python_Course_Tinkoff in /Desktop/	1	0
+cd /Desktop/ /Desktop/lesson/
+created a.out in /Desktop/lesson/	1	0
+created FCFS in /Desktop/lesson/	0	1
+created input.txt in /Desktop/lesson/	0	1
+cd /Desktop/lesson/ /Desktop/python_Course_Tinkoff/
+created main.py in /Desktop/python_Course_Tinkoff/	0	1
+created taxis in /Desktop/python_Course_Tinkoff/	0	1
+created test.ipynb in /Desktop/python_Course_Tinkoff/	0	1
+cd /Desktop/python_Course_Tinkoff/ /Downloads/
+created Telegram Desktop in /	1	0
+chdir error: dir does not exists { Telegram Desktop }
+created Compiler Explorer code.cpp in /Downloads/	0	1
+created makefile in /Downloads/	0	1
+created New_Sort in /Downloads/	0	1
+cd /Downloads/ /
+created main.cpp in /	0	1
+created os_file.h in /	0	1
+cd / /file_Manager/
+created 22_1_2task in /file_Manager/	0	1
+created 22_1_2task.c in /file_Manager/	0	1
+created os_file in /file_Manager/	0	1
+removing node c	/a/b/c/
+removing node b	/a/b/
+removing node a.txt	/a/a.txt/
+removing node qwe.txt	/a/qwe.txt/
+removing node a	/a/
+removing node a.out	/Desktop/lesson/a.out/
+removing node FCFS	/Desktop/lesson/FCFS/
+removing node input.txt	/Desktop/lesson/input.txt/
+removing node lesson	/Desktop/lesson/
+removing node main.py	/Desktop/python_Course_Tinkoff/main.py/
+removing node taxis	/Desktop/python_Course_Tinkoff/taxis/
+removing node test.ipynb	/Desktop/python_Course_Tinkoff/test.ipynb/
+removing node python_Course_Tinkoff	/Desktop/python_Course_Tinkoff/
+removing node Desktop	/Desktop/
+removing node Documents	/Documents/
+removing node Compiler Explorer code.cpp	/Downloads/Compiler Explorer code.cpp/
+removing node makefile	/Downloads/makefile/
+removing node New_Sort	/Downloads/New_Sort/
+removing node Downloads	/Downloads/
+removing node 22_1_2task	/file_Manager/22_1_2task/
+removing node 22_1_2task.c	/file_Manager/22_1_2task.c/
+removing node os_file	/file_Manager/os_file/
+removing node file_Manager	/file_Manager/
+removing node Telegram Desktop	/Telegram Desktop/
+removing node main.cpp	/main.cpp/
+removing node os_file.h	/os_file.h/
+removing node /	/

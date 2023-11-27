@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "3_1_8task.h"
+#include "03_1_08task.cpp"
+// #include "os_file.h"
 
 int main()
 {
@@ -50,6 +51,10 @@ int main()
     fm.create_file("./22_1_2task", 1);
     fm.create_file("./22_1_2task.c", 1);
     fm.create_file("./os_file", 1);
+    fm.change_dir("/");
+    fm.create_file("file1.txt",1000);
+    fm.remove("file1.txt",0);
+    fm.remove("file1.txt",0);
     fm.destroy();
     // prnt(&__ind);
     return 0;
