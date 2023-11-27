@@ -8,7 +8,15 @@ int main()
 {
     file_manager_t fm;
     setup_file_manager(&fm);
-    fm.create(101010);
+
+    // fm.create(1000);
+    // fm.create(101010);
+    // fm.create_file("file1.txt",1000);
+    // fm.create_file("file2.txt",1); 
+    // fm.remove("file1.txt",0);
+    // fm.remove("file1.txt",0); 
+    // fm.create_file("file2.txt",1000/2);
+
     fm.create_dir("/a");
     fm.create_dir("/a");
     fm.create_dir("/a");

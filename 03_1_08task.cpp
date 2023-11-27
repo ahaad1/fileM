@@ -93,6 +93,7 @@ int rmNode(iNode *node) {
     for (_uint i = 0; i < node->chldCnt; ++i) { rmNode(node->chld[i]); }
     fprintf(stdout, "removing node %s\t%s\n", node->name, node->fPth);
     // removing node
+    __ocpdsz -= node->objSz;
     free(node->name);
     free(node->fPth);
     free(node->chld);
@@ -137,7 +138,7 @@ int iNdRm(const char* path, int recursive){
         free(chkpath);
         free(fchkpath);
         free(tfr);
-        fprintf(stdout, "node not removed: not exist %s\n", path);
+        fprintf(stderr, "node not removed: not exist %s\n", path);
         return 0;
     }
     iNode *nodeToDelete = __ind;
