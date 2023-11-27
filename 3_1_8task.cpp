@@ -13,6 +13,8 @@
 typedef unsigned short int _ushrtint;
 typedef unsigned int _uint;
 
+// #blablalbla
+
 typedef struct iNode
 {
     _ushrtint is_dir;
