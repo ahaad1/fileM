@@ -34,6 +34,7 @@ int create_dir(const char *path);
 int create_file(const char* path, int file_size);
 int change_dir(const char* path);
 int remove(const char* path, int recursive);
+int copy(const char *path, const char *to_path);
 void get_cur_dir(char *dst);
 
 int iNdMkObj(const char *path, _ushrtint o_type, _uint o_size);
@@ -43,20 +44,23 @@ int iNdCkExst(const char *o_name);
 int iNdRm(const char* path, int recursive);
 int rmNode(iNode *node);
 int chkDsk(iNode *iNd);
+int indCpy(const char *path, const char *to_path);
 
 void prnt(iNode **tst1);
+
+int indCpy(const char *path, const char *to_path){
+    
+}   
 
 int rmNode(iNode *node) {
     if (node == NULL) { return 0; }
     for (_uint i = 0; i < node->chldCnt; ++i) { rmNode(node->chld[i]); }
     fprintf(stdout, "removing node %s\t%s\n", node->name, node->fPth);
-    
     // removing node
     free(node->name);
     free(node->fPth);
     free(node->chld);
     free(node);
-
     return 1;
 }
 
@@ -79,17 +83,17 @@ int iNdRm(const char* path, int recursive){
         if (strcmp(tkn, ".") == 0){ continue; } 
         if (strcmp(tkn, "..") == 0) { if (__ind->prnt != NULL) __ind = __ind->prnt; continue; }
         if (!vldTkn(tkn)) { continue; }
-        if (!iNdCkExst(tkn)) {
-            fprintf(stdout, "rm node error: dir or file does not exists { %s }\n", tkn);
-            free(tfr);
-            free(str);
-            return 0;
+        for (_uint i = 0; i < __ind->chldCnt; ++i)
+        {
+            if (__ind->chld != NULL && strcmp(__ind->chld[i]->name, tkn) == 0) {  
+                __ind = __ind->chld[i];
+                break; 
+            }
         }
     }
 
     iNode *nodeToDelete = __ind;
     if (nodeToDelete == NULL) { return 0; } // node not found
-
     if (!recursive && nodeToDelete->is_dir && nodeToDelete->chldCnt > 0) { 
         free(tfr);
         free(str);
@@ -100,7 +104,6 @@ int iNdRm(const char* path, int recursive){
     if(__ind->prnt != NULL) __ind = __ind->prnt;
     // removing node , there is no way back
     int result = rmNode(nodeToDelete);
-
     if (result) {
         --__ind->chldCnt;
         free(__cwd);
@@ -234,7 +237,7 @@ int iNdCkExst(const char *o_name)
 {
     for (_uint i = 0; i < __ind->chldCnt; ++i)
     {
-        if (__ind->chld != NULL && strcmp(__ind->chld[i]->name, o_name) == 0) 
+        if (__ind->chld != NULL && strcmp(__ind->chld[i]->name, o_name) == 0 && __ind->chld[i]->is_dir) 
         {  
             __ind = __ind->chld[i]; 
             return 1; 
