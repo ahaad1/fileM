@@ -7,6 +7,6 @@ default: all
 all: myprogram
 
 myprogram: 3_1_8main.cpp
-	$(CC) $(CFLAGS) -o 3_1_8main 3_1_8main.cpp -fsanitize=address
+	$(CC) -fsanitize=address $(CFLAGS) -o 3_1_8main 3_1_8main.cpp 
 	./3_1_8main  
 	$(RM) 3_1_8main 

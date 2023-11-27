@@ -34,6 +34,7 @@ int create_dir(const char *path);
 int create_file(const char* path, int file_size);
 int change_dir(const char* path);
 int remove(const char* path, int recursive);
+int destroy();
 int copy(const char *path, const char *to_path);
 void get_cur_dir(char *dst);
 
@@ -45,12 +46,47 @@ int iNdRm(const char* path, int recursive);
 int rmNode(iNode *node);
 int chkDsk(iNode *iNd);
 int indCpy(const char *path, const char *to_path);
-
+int iNdDstr();
+int mkCpNode(const char *path, iNode *iNd);
+ 
 void prnt(iNode **tst1);
 
-int indCpy(const char *path, const char *to_path){
-    
-}   
+// int mkCpNode(iNode *iNd){
+//     iNode *cpNode = (iNode*)malloc(sizeof(iNode));
+//     for(_uint i = 0; i < iNd->chldCnt; ++i){
+//         if(iNd->chld[i] == NULL) continue;
+//         else iNd = iNd->chld[i];
+//     }
+//     return 1;
+// }
+
+// int indCpy(const char *path, const char *to_path){
+//     if(path == NULL || to_path == NULL || strcmp(path, "") == 0 || strcmp(to_path, "") == 0 || strcmp(path, to_path) == 0) return -1;
+//     char *tkn, *str, *tfr;
+//     while (__ind->prnt != NULL) __ind = __ind->prnt;
+//     if (path[0] == '/') { tfr = str = strdup(path); }
+//     if(path[0] != '/'){
+//         tfr = str = (char *)calloc(sizeof(char) , strlen(__cwd) + strlen(path) + 1);
+//         strcat(str, __cwd); 
+//         strcat(str, path); 
+//     }
+//     while ((tkn = strsep(&str, "/")) != NULL){
+//         if (strcmp(tkn, ".") == 0){ continue; } 
+//         if (strcmp(tkn, "..") == 0) { if (__ind->prnt != NULL) __ind = __ind->prnt; continue; }
+//         if (!vldTkn(tkn)) { continue; }
+//         for (_uint i = 0; i < __ind->chldCnt; ++i)
+//         {
+//             if (__ind->chld != NULL && strcmp(__ind->chld[i]->name, tkn) == 0) {  
+//                 __ind = __ind->chld[i];
+//                 break; 
+//             }
+//         }
+//     }
+//     iNode *cpyNode = __ind;
+//     mkCpNode(path, cpyNode);
+//     free(tfr);
+//     return 1;
+// }   
 
 int rmNode(iNode *node) {
     if (node == NULL) { return 0; }
@@ -93,10 +129,14 @@ int iNdRm(const char* path, int recursive){
     }
 
     iNode *nodeToDelete = __ind;
-    if (nodeToDelete == NULL) { return 0; } // node not found
+    // if (nodeToDelete == NULL) { 
+    //     free(tfr);
+    //     free(str);
+    //     return 0; 
+    // }
     if (!recursive && nodeToDelete->is_dir && nodeToDelete->chldCnt > 0) { 
         free(tfr);
-        free(str);
+        // free(str);
         fprintf(stdout, "node %s not removed: bad flag 1\n", nodeToDelete->fPth);
         return 0; 
     }
@@ -111,7 +151,7 @@ int iNdRm(const char* path, int recursive){
         fprintf(stdout, "node removed\n");
     }
     free(tfr);
-    free(str);
+    // free(str);
     return result;
 }
 
@@ -133,7 +173,7 @@ int iNdChDir(const char *path){
         if (!vldTkn(tkn)) { continue; }
         if (!iNdCkExst(tkn)) {
             fprintf(stdout, "chdir error: dir does not exists { %s }\n", tkn);
-            free(str);
+            // free(str);
             free(tfr);
             return 0;
         }
@@ -141,7 +181,7 @@ int iNdChDir(const char *path){
     printf("cd %s %s\n", __cwd, __ind->fPth);
     free(__cwd);
     __cwd = strdup(__ind->fPth);
-    free(str);
+    // free(str);
     free(tfr);
     return 1;
 }
@@ -156,7 +196,7 @@ int iNdMkObj(const char *path, _ushrtint o_type, _uint o_size)
     }
     if (path[0] != '/')
     {
-        tfr = newpth = (char *)malloc(sizeof(char) * (strlen(__cwd) + strlen(path) + 1));
+        tfr = newpth = (char *)calloc(sizeof(char) , (strlen(__cwd) + strlen(path) + 1));
         strcat(newpth, __cwd);
         strcat(newpth, path);
     }
@@ -228,7 +268,8 @@ void setup_file_manager(file_manager_t *fm)
     fm->change_dir = change_dir;
     fm->get_cur_dir = get_cur_dir;
     fm->remove = remove;
-    // fm->destroy = destroy;
+    // fm->copy = copy;
+    fm->destroy = destroy;
 }
 int chkDsk(iNode *iNd) { return iNd == NULL ? 0 : 1; }
 
@@ -255,10 +296,19 @@ int vldTkn(const char *tkn)
     return 1;
 }
 
+int iNdDstr(){
+    while(__ind->prnt != NULL) __ind = __ind->prnt;
+    rmNode(__ind);
+    free(__cwd);
+    return 1;
+}
+
 int create_dir(const char* path){ return chkDsk(__ind) == 0 ? 0 : iNdMkObj(path, 1, 0); }
 int create_file(const char* path, int file_size) { return chkDsk(__ind) == 0 ? 0 : iNdMkObj(path, 0, file_size); }
 int change_dir(const char* path) { return chkDsk(__ind) == 0 ? 0 : iNdChDir((char*)path); }
 int remove(const char* path, int recursive) { return chkDsk(__ind) == 0 ? 0 : iNdRm(path, recursive); }
+// int copy(const char *path, const char *to_path) { return chkDsk(__ind) == 0 ? 0 : indCpy(path, to_path); }
+int destroy() { return chkDsk(__ind) == 0 ? 0 : iNdDstr(); }
 
 void prnt(iNode **tst1) {
     fprintf(stdout,"======\n");
