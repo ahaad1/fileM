@@ -9,14 +9,6 @@ int main()
     file_manager_t fm;
     setup_file_manager(&fm);
 
-    // fm.create(1000);
-    // fm.create(101010);
-    // fm.create_file("file1.txt",1000);
-    // fm.create_file("file2.txt",1); 
-    // fm.remove("file1.txt",0);
-    // fm.remove("file1.txt",0); 
-    // fm.create_file("file2.txt",1000/2);
-
     fm.create_dir("/a");
     fm.create_dir("/a");
     fm.create_dir("/a");
@@ -63,7 +55,18 @@ int main()
     fm.create_file("file1.txt",1000);
     fm.remove("file1.txt",0);
     fm.remove("file1.txt",0);
+    fm.change_dir("/");
+    fm.create_dir("cat");
+    fm.create_dir("cat/says");
+    fm.create_dir("cat/says/meow");
+    fm.create_dir("cat/doesnt");
+    fm.create_dir("cat/doesnt/says");
+    fm.create_dir("cat/doesnt/says/woof");
+    fm.create_dir("/dream_numbers");
+    fm.create_dir("/dream_numbers/420");
+    fm.create_dir("/henpecked_numbers");
+    fm.create_dir("/henpecked_numbers/69");
     fm.destroy();
-    // prnt(&__ind);
+    // // prnt(&__ind);
     return 0;
 }
