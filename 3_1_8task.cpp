@@ -41,13 +41,14 @@ int iNdChDir(const char *path);
 int vldTkn(const char *tkn);
 int iNdCkExst(const char *o_name);
 int iNdRm(const char* path, int recursive);
+int rmNode(iNode *node);
 int chkDsk(iNode *iNd);
 
 void prnt(iNode **tst1);
 
-int removeNode(iNode *node) {
+int rmNode(iNode *node) {
     if (node == NULL) { return 0; }
-    for (_uint i = 0; i < node->chldCnt; ++i) { removeNode(node->chld[i]); }
+    for (_uint i = 0; i < node->chldCnt; ++i) { rmNode(node->chld[i]); }
     fprintf(stdout, "removing node %s\t%s\n", node->name, node->fPth);
     
     // removing node
@@ -56,15 +57,19 @@ int removeNode(iNode *node) {
     free(node->chld);
     free(node);
 
-    return 1; // Успех
+    return 1;
 }
 
 int iNdRm(const char* path, int recursive){
+    if(strcmp(path, "/") == 0){
+        fprintf(stderr, "impossible to rm /, aborting\n");
+        return 0;
+    }
     char *tkn, *str, *tfr;
     while (__ind->prnt != NULL) __ind = __ind->prnt;
     if (path[0] == '/') { tfr = str = strdup(path); }
     if(path[0] != '/'){
-        tfr = str = (char *)calloc(sizeof(char) , (strlen(__cwd) + strlen(path) + 1));
+        tfr = str = (char *)calloc(sizeof(char) , strlen(__cwd) + strlen(path) + 1);
         strcat(str, __cwd); 
         strcat(str, path); 
     }
@@ -75,7 +80,9 @@ int iNdRm(const char* path, int recursive){
         if (strcmp(tkn, "..") == 0) { if (__ind->prnt != NULL) __ind = __ind->prnt; continue; }
         if (!vldTkn(tkn)) { continue; }
         if (!iNdCkExst(tkn)) {
-            fprintf(stdout, "chdir error: dir does not exists { %s }\n", tkn);
+            fprintf(stdout, "rm node error: dir or file does not exists { %s }\n", tkn);
+            free(tfr);
+            free(str);
             return 0;
         }
     }
@@ -83,18 +90,25 @@ int iNdRm(const char* path, int recursive){
     iNode *nodeToDelete = __ind;
     if (nodeToDelete == NULL) { return 0; } // node not found
 
-    if (!recursive && nodeToDelete->is_dir && nodeToDelete->chldCnt > 0) { return 0; } // rm dir without flag 1
+    if (!recursive && nodeToDelete->is_dir && nodeToDelete->chldCnt > 0) { 
+        free(tfr);
+        free(str);
+        fprintf(stdout, "node %s not removed: bad flag 1\n", nodeToDelete->fPth);
+        return 0; 
+    }
 
+    if(__ind->prnt != NULL) __ind = __ind->prnt;
     // removing node , there is no way back
-    int result = removeNode(nodeToDelete);
+    int result = rmNode(nodeToDelete);
 
     if (result) {
-        --nodeToDelete->chldCnt;
+        --__ind->chldCnt;
         free(__cwd);
         __cwd = strdup("/");
-        fprintf(stdout, "removed node %s\n", nodeToDelete->fPth);
+        fprintf(stdout, "node removed\n");
     }
     free(tfr);
+    free(str);
     return result;
 }
 
@@ -116,13 +130,14 @@ int iNdChDir(const char *path){
         if (!vldTkn(tkn)) { continue; }
         if (!iNdCkExst(tkn)) {
             fprintf(stdout, "chdir error: dir does not exists { %s }\n", tkn);
+            free(str);
+            free(tfr);
             return 0;
         }
     }
     printf("cd %s %s\n", __cwd, __ind->fPth);
     free(__cwd);
     __cwd = strdup(__ind->fPth);
-    free(tkn);
     free(str);
     free(tfr);
     return 1;
@@ -154,6 +169,8 @@ int iNdMkObj(const char *path, _ushrtint o_type, _uint o_size)
             if(!__ind->is_dir){ fprintf(stderr, "error: impossible to create object in file\n"); continue; }
             if(__ocpdsz + o_size > __dsksz || strlen(__ind->fPth) + strlen(tkn) + strlen("/") > 128) {
                 fprintf(stderr, "error: bad object name length or not enough space on disk\n");
+                free(newpth);
+                free(tfr);
                 return 0;
             }
             ++__ind->chldCnt;
@@ -177,7 +194,6 @@ int iNdMkObj(const char *path, _ushrtint o_type, _uint o_size)
     }
     free(tfr);
     free(newpth);
-    free(tkn);
     return 1;
 }
 

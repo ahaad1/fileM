@@ -13,7 +13,7 @@ int main()
     fm.create_file("/a/a.txt", 10);
     fm.create_dir("/a/b/c");
     fm.create_file("/a/qwe.txt", 100);
-    fm.remove("/a/", 1);
+    fm.remove("/", 0);
     fm.change_dir("/a");
     // prnt(&__ind);
     return 0;

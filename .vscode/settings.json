@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "os_file.h": "c",
-        "format": "cpp"
+        "format": "cpp",
+        "sstream": "cpp"
     }
 }
