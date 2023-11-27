@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "03_1_08task.cpp"
-// #include "os_file.h"
+// #include "03_1_08task.cpp"
+#include "os_file.h"
 
 int main()
 {
