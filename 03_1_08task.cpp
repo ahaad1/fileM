@@ -96,15 +96,21 @@ int rmNode(iNode *node)
     }
     for (_uint i = 0; i < node->chldCnt; ++i)
     {
+        printf("RMNODE: %s \n", node);
         rmNode(node->chld[i]);
     }
-    // fprintf(stdout, "removing node %s\t%s\n", node->name, node->fPth);
+    fprintf(stdout, "removing node %s\t%s\n", node->name, node->fPth);
     // removing node
     __ocpdsz -= node->objSz;
     free(node->name);
     free(node->fPth);
     free(node->chld);
+    node->name = NULL;
+    node->fPth = NULL;
+    node->chld = NULL;
+    node->prnt = NULL;
     free(node);
+    node = NULL;
     return 1;
 }
 
@@ -150,7 +156,9 @@ int iNdRm(const char *path, int recursive)
         }
         for (_uint i = 0; i < __ind->chldCnt; ++i)
         {
-            if (__ind->chld != NULL && strcmp(__ind->chld[i]->name, tkn) == 0)
+            if (__ind->chld != NULL && __ind->chld[i] != NULL 
+            && (__ind->chld[i]->is_dir == 1 || __ind->chld[i]->is_dir == 0) 
+            && strcmp(__ind->chld[i]->name, tkn) == 0 )
             {
                 chkpath = (char *)realloc(chkpath, sizeof(char) * (strlen(chkpath) + strlen(tkn) + strlen("/") + 1));
                 strcat(chkpath, "/");
@@ -174,6 +182,8 @@ int iNdRm(const char *path, int recursive)
     if (!recursive && nodeToDelete->is_dir && nodeToDelete->chldCnt > 0)
     {
         free(tfr);
+        free(chkpath);
+        free(fchkpath);
         // fprintf(stdout, "node %s not removed: bad flag 1\n", nodeToDelete->fPth);
         return 0;
     }
@@ -185,7 +195,9 @@ int iNdRm(const char *path, int recursive)
     int result = rmNode(nodeToDelete);
     if (result)
     {
-        --__ind->chldCnt;
+        nodeToDelete = NULL;
+        // --__ind->chldCnt;
+        //  __ind->chld = (iNode **)realloc(__ind->chld, sizeof(iNode *) * __ind->chldCnt);
         free(__cwd);
         __cwd = strdup("/");
         // fprintf(stdout, "node removed\n");
@@ -395,12 +407,12 @@ int vldTkn(const char *tkn)
 
 int iNdDstr()
 {
-    while (__ind->prnt != NULL)
-        __ind = __ind->prnt;
+    iNdChDir("/");
     rmNode(__ind);
     free(__cwd);
     // free(__ind);
     __ind = NULL;
+    __cwd = NULL;
     return 1;
 }
 
@@ -411,17 +423,23 @@ int remove(const char *path, int recursive) { return chkDsk(__ind) == 0 ? 0 : iN
 // int copy(const char *path, const char *to_path) { return chkDsk(__ind) == 0 ? 0 : indCpy(path, to_path); }
 int destroy() { return chkDsk(__ind) == 0 ? 0 : iNdDstr(); }
 
-void prnt(iNode **tst1)
-{
-    // fprintf(stdout, "======\n");
-    for (_uint i = 0; i < __ind->chldCnt; ++i)
-    {
-        // fprintf(stdout, "%s\t%s\n", __ind->fPth, __ind->chld[i]->fPth);
-    }
-    // fprintf(stdout, "======\n");
-}
-
 void get_cur_dir(char *dst)
 {
     // fprintf(stdout, "CUR_DIR: %s\n", __cwd);
+}
+
+void printTree(iNode *node){
+    printf("is_dir: %hu\n", node->is_dir);
+    printf("objSz: %u\n", node->objSz);
+    printf("chldCnt: %u\n", node->chldCnt);
+    printf("name: %s\n", node->name);
+    printf("fPth: %s\n\n", node->fPth);
+    // Print information about children, if any
+    if (node->chldCnt > 0 && node->chld != NULL) {
+        printf("Children:\n");
+        for (_uint i = 0; i < node->chldCnt; ++i) {
+            printf("Child %u %s:\n", i + 1, node->chld[i]);
+            printTree(node->chld[i]);
+        }
+    }
 }
