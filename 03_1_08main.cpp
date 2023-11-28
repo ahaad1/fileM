@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-// #include "03_1_08task.cpp"
-#include "os_file.h"
+#include "03_1_08task.cpp"
+// #include "os_file.h"
 
 int main()
 {
@@ -10,33 +10,42 @@ int main()
     setup_file_manager(&fm);
 
     // // Common file manager test 1
-    printf("%d ",  fm.create(1000)); /*expected: 1, passed*/
-    printf("%d ",  fm.create_file("test_file",1000+1)); /*expected: 0, passed*/
-    printf("%d ",  fm.destroy()); /*expected: 1, passed*/
-    printf("%d ",  fm.destroy()); /*expected: 0, passed*/
-    printf("%d ",  fm.create(1000)); /*expected: 1, passed*/
-    printf("%d ",  fm.create(1000)); /*expected: 0, passed*/
-    printf("%d \n",  fm.destroy()); /*expected: 1, passed*/
+    fm.create(1000); /* expected: 1, passed */
+    fm.create_file("test_file",1000+1); /* expected: 0, passed */
+    fm.destroy(); /* expected: 1, passed */
+    fm.destroy(); /* expected: 0, passed */
+    fm.create(1000); /* expected: 1, passed */
+    fm.create(1000); /* expected: 0, passed */
+    fm.destroy(); /* expected: 1, passed */
     // // Test 1 passed
     // // Common file manager test 2
-    printf("\n\nTEST2\n");
-    printf("%d ", fm.create(1000)); /*expected: 1, passed*/
-    printf("%d ", fm.create_file("file1.txt",1000)); /*expected: 1, passed*/
-    printf("%d ", fm.create_file("file2.txt",1)); /*expected: 0, passed*/
-    printf("%d ", fm.remove("file1.txt",0)); /*expected: 1, passed*/
-    printf("%d ", fm.remove("file1.txt",0)); /*expected: 0, passed*/
-    printf("%d ", fm.create_file("file2.txt",1000/2)); /*expected: 1, passed*/
-    printf("%d ", fm.create_file("file2.txt",1000/2)); /*expected: 0, passed*/
-    printf("%d ", fm.create_file("file3.txt",1000/2)); /*expected: 1, passed*/
-    printf("%d ", fm.create_dir("test_dir")); /*expected: 1, passed*/
-    printf("%d ", fm.remove("file2.txt",0)); /*expected: 1, passed*/
-
-    // printf("\n---treeinfo2---\n");
+    fm.create(1000); /* expected: 1, passed */
+    fm.create_file("file1.txt",1000); /* expected: 1, passed */
+    fm.create_file("file2.txt",1); /* expected: 0, passed */
+    fm.remove("file1.txt",0); /* expected: 1, passed */
+    fm.remove("file1.txt",0); /* expected: 0, passed */
+    fm.create_file("file2.txt",1000/2); /* expected: 1, passed */
+    fm.create_file("file2.txt",1000/2); /* expected: 0, passed */
+    fm.create_file("file3.txt",1000/2); /* expected: 1, passed */
+    fm.create_dir("test_dir"); /* expected: 1, passed */
+    fm.remove("file2.txt",0); /* expected: 1, passed */
+    fm.destroy(); /* expected: 1, passed */
+    // // Test 2 passed
+    // // Common file manager test 3
+    printf("%d\t",  fm.create(1000)); /* expected: 1, passed */
+    printf("%d\t",  fm.create_dir("dir1")); /* expected: 1, passed */
+    printf("%d\t",  fm.create_dir("dir1/dir11")); /* expected: 1, passed */
+    printf("%d\t",  fm.change_dir("dir1")); /* expected: 1, passed */
+    printf("%d\t",  fm.create_dir("../dir2")); /* expected: 1, passed */
+    printf("%d\t",  fm.create_dir("../dir2/dir3")); /* expected: 1, passed */
+    
+    printf("\n===test3===\n");
     fm.change_dir("/");
-    // printTree(__ind);
-    // printf("-----------\n");
+    printTree(__ind);
+    printf("\n=================\n");
 
-    printf("%d \n\n", fm.destroy()); /*expected: 1, */
+    printf("%d\t", fm.remove("/dir2/dir3", 0)); /* expected: 1, failed */
+    // // Test 3 failed
 
 
     // fm.create_dir("/a");
