@@ -132,6 +132,8 @@ int iNdRm(const char *path, int recursive)
     if (path[0] == '/')
     {
         tfr = str = strdup(path);
+        fchkpath = (char*)realloc(fchkpath, sizeof(char)*strlen(path) + 1);
+        strcpy(fchkpath, str);
     }
     if (path[0] != '/')
     {
@@ -201,8 +203,6 @@ int iNdRm(const char *path, int recursive)
     if (result)
     {
         nodeToDelete = NULL;
-        // --__ind->chldCnt;
-        //  __ind->chld = (iNode **)realloc(__ind->chld, sizeof(iNode *) * __ind->chldCnt);
         free(__cwd);
         __cwd = strdup("/");
         // fprintf(stdout, "node removed\n");
