@@ -49,45 +49,6 @@ int indCpy(const char *path, const char *to_path);
 int iNdDstr();
 int mkCpNode(const char *path, iNode *iNd);
 
-void prnt(iNode **tst1);
-
-// int mkCpNode(iNode *iNd){
-//     iNode *cpNode = (iNode*)malloc(sizeof(iNode));
-//     for(_uint i = 0; i < iNd->chldCnt; ++i){
-//         if(iNd->chld[i] == NULL) continue;
-//         else iNd = iNd->chld[i];
-//     }
-//     return 1;
-// }
-
-// int indCpy(const char *path, const char *to_path){
-//     if(path == NULL || to_path == NULL || strcmp(path, "") == 0 || strcmp(to_path, "") == 0 || strcmp(path, to_path) == 0) return -1;
-//     char *tkn, *str, *tfr;
-//     while (__ind->prnt != NULL) __ind = __ind->prnt;
-//     if (path[0] == '/') { tfr = str = strdup(path); }
-//     if(path[0] != '/'){
-//         tfr = str = (char *)calloc(sizeof(char) , strlen(__cwd) + strlen(path) + 1);
-//         strcat(str, __cwd);
-//         strcat(str, path);
-//     }
-//     while ((tkn = strsep(&str, "/")) != NULL){
-//         if (strcmp(tkn, ".") == 0){ continue; }
-//         if (strcmp(tkn, "..") == 0) { if (__ind->prnt != NULL) __ind = __ind->prnt; continue; }
-//         if (!vldTkn(tkn)) { continue; }
-//         for (_uint i = 0; i < __ind->chldCnt; ++i)
-//         {
-//             if (__ind->chld != NULL && strcmp(__ind->chld[i]->name, tkn) == 0) {
-//                 __ind = __ind->chld[i];
-//                 break;
-//             }
-//         }
-//     }
-//     iNode *cpyNode = __ind;
-//     mkCpNode(path, cpyNode);
-//     free(tfr);
-//     return 1;
-// }
-
 int rmNode(iNode *node)
 {
     if (node == NULL)
@@ -298,8 +259,8 @@ int iNdMkObj(const char *path, _ushrtint o_type, _uint o_size)
             if(isCreated && newNode != NULL){
                 iNdRm(newNode->fPth, 0);
                 newNode = NULL;
-                free(tfr);
-                return 0;
+                isCreated = 0;
+                break;
             }
             if (!__ind->is_dir)
             {
@@ -338,7 +299,7 @@ int iNdMkObj(const char *path, _ushrtint o_type, _uint o_size)
         }
     }
     free(tfr);
-    return 1;
+    return isCreated;
 }
 
 int create(int disk_size)
