@@ -31,10 +31,10 @@ int main()
     printf("%d ", fm.create_dir("test_dir")); /*expected: 1, passed*/
     printf("%d ", fm.remove("file2.txt",0)); /*expected: 1, passed*/
 
-    printf("\n---treeinfo2---\n");
+    // printf("\n---treeinfo2---\n");
     fm.change_dir("/");
-    printTree(__ind);
-    printf("-----------\n");
+    // printTree(__ind);
+    // printf("-----------\n");
 
     printf("%d \n\n", fm.destroy()); /*expected: 1, */
 
