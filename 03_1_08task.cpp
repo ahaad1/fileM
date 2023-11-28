@@ -96,10 +96,15 @@ int rmNode(iNode *node)
     }
     for (_uint i = 0; i < node->chldCnt; ++i)
     {
-        printf("RMNODE: %s \n", node);
-        rmNode(node->chld[i]);
+        // printf("RMNODE: %s %d\n", node, i + 1);
+        if (__ind->chld != NULL && __ind->chld[i] != NULL && __ind->chld[i]->prnt != NULL 
+            && (__ind->chld[i]->is_dir == 1 || __ind->chld[i]->is_dir == 0)){
+                rmNode(node->chld[i]);
+            }
+        free(node->chld[i]);
+        node->chld[i] = NULL;
     }
-    fprintf(stdout, "removing node %s\t%s\n", node->name, node->fPth);
+    // fprintf(stdout, "removing node %s\t%s\n", node->name, node->fPth);
     // removing node
     __ocpdsz -= node->objSz;
     free(node->name);
@@ -109,7 +114,7 @@ int rmNode(iNode *node)
     node->fPth = NULL;
     node->chld = NULL;
     node->prnt = NULL;
-    free(node);
+    // free(node);
     node = NULL;
     return 1;
 }
@@ -156,7 +161,7 @@ int iNdRm(const char *path, int recursive)
         }
         for (_uint i = 0; i < __ind->chldCnt; ++i)
         {
-            if (__ind->chld != NULL && __ind->chld[i] != NULL 
+            if (__ind->chld != NULL && __ind->chld[i] != NULL && __ind->chld[i]->prnt != NULL
             && (__ind->chld[i]->is_dir == 1 || __ind->chld[i]->is_dir == 0) 
             && strcmp(__ind->chld[i]->name, tkn) == 0 )
             {
@@ -379,7 +384,10 @@ int iNdCkExst(const char *o_name)
 {
     for (_uint i = 0; i < __ind->chldCnt; ++i)
     {
-        if (__ind->chld != NULL && strcmp(__ind->chld[i]->name, o_name) == 0 /*&& __ind->chld[i]->is_dir*/)
+        // if (__ind->chld != NULL && strcmp(__ind->chld[i]->name, o_name) == 0 /*&& __ind->chld[i]->is_dir*/)
+        if(__ind->chld != NULL && __ind->chld[i] != NULL && __ind->chld[i]->prnt != NULL
+            && (__ind->chld[i]->is_dir == 1 || __ind->chld[i]->is_dir == 0) 
+            && strcmp(__ind->chld[i]->name, o_name) == 0)
         {
             __ind = __ind->chld[i];
             return 1;
@@ -410,7 +418,7 @@ int iNdDstr()
     iNdChDir("/");
     rmNode(__ind);
     free(__cwd);
-    // free(__ind);
+    free(__ind);
     __ind = NULL;
     __cwd = NULL;
     return 1;
@@ -438,7 +446,7 @@ void printTree(iNode *node){
     if (node->chldCnt > 0 && node->chld != NULL) {
         printf("Children:\n");
         for (_uint i = 0; i < node->chldCnt; ++i) {
-            printf("Child %u %s:\n", i + 1, node->chld[i]);
+            printf("Child %u:\n", i + 1);
             printTree(node->chld[i]);
         }
     }

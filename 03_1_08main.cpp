@@ -28,12 +28,6 @@ int main()
     printf("%d ", fm.create_file("file2.txt",1000/2)); /*expected: 1, passed*/
     printf("%d ", fm.create_file("file2.txt",1000/2)); /*expected: 0, passed*/
     printf("%d ", fm.create_file("file3.txt",1000/2)); /*expected: 1, passed*/
-
-    printf("\n---treeinfo2---\n");
-    fm.change_dir("/");
-    printTree(__ind);
-    printf("-----------\n");
-
     printf("%d ", fm.create_dir("test_dir")); /*expected: 1, passed*/
     printf("%d ", fm.remove("file2.txt",0)); /*expected: 1, passed*/
 
