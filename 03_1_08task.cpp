@@ -43,13 +43,13 @@ int iNdChDir(const char *path);
 int vldTkn(const char *tkn);
 int iNdCkExst(const char *o_name);
 int iNdRm(const char *path, int recursive);
-int rmNode(iNode *node);
+int rmNode(iNode *node, int rootflag);
 int chkDsk(iNode *iNd);
 int indCpy(const char *path, const char *to_path);
 int iNdDstr();
 int mkCpNode(const char *path, iNode *iNd);
 
-int rmNode(iNode *node)
+int rmNode(iNode *node, int rootflag)
 {
     if (node == NULL)
     {
@@ -57,16 +57,12 @@ int rmNode(iNode *node)
     }
     for (_uint i = 0; i < node->chldCnt; ++i)
     {
-        // printf("RMNODE: %s %d\n", node, i + 1);
-        if (__ind->chld != NULL && __ind->chld[i] != NULL && __ind->chld[i]->prnt != NULL 
-            && (__ind->chld[i]->is_dir == 1 || __ind->chld[i]->is_dir == 0)){
-                rmNode(node->chld[i]);
-            }
-        free(node->chld[i]);
+        if (__ind->chld != NULL && __ind->chld[i] != NULL && __ind->chld[i]->prnt != NULL && (__ind->chld[i]->is_dir == 1 || __ind->chld[i]->is_dir == 0))
+        {
+            rmNode(node->chld[i], 0);
+        }
         node->chld[i] = NULL;
     }
-    // fprintf(stdout, "removing node %s\t%s\n", node->name, node->fPth);
-    // removing node
     __ocpdsz -= node->objSz;
     free(node->name);
     free(node->fPth);
@@ -75,8 +71,9 @@ int rmNode(iNode *node)
     node->fPth = NULL;
     node->chld = NULL;
     node->prnt = NULL;
-    // free(node);
     node = NULL;
+    if (!rootflag)
+        free(node);
     return 1;
 }
 
@@ -84,7 +81,6 @@ int iNdRm(const char *path, int recursive)
 {
     if (strcmp(path, "/") == 0)
     {
-        // fprintf(stderr, "impossible to rm /, aborting\n");
         return 0;
     }
     char *tkn, *str, *tfr, *chkpath = (char *)calloc(sizeof(char), 1), *fchkpath = (char *)calloc(sizeof(char), 1);
@@ -93,7 +89,7 @@ int iNdRm(const char *path, int recursive)
     if (path[0] == '/')
     {
         tfr = str = strdup(path);
-        fchkpath = (char*)realloc(fchkpath, sizeof(char)*strlen(path) + 1);
+        fchkpath = (char *)realloc(fchkpath, sizeof(char) * strlen(path) + 1);
         strcpy(fchkpath, str);
     }
     if (path[0] != '/')
@@ -124,9 +120,7 @@ int iNdRm(const char *path, int recursive)
         }
         for (_uint i = 0; i < __ind->chldCnt; ++i)
         {
-            if (__ind->chld != NULL && __ind->chld[i] != NULL && __ind->chld[i]->prnt != NULL
-            && (__ind->chld[i]->is_dir == 1 || __ind->chld[i]->is_dir == 0) 
-            && strcmp(__ind->chld[i]->name, tkn) == 0 )
+            if (__ind->chld != NULL && __ind->chld[i] != NULL && __ind->chld[i]->prnt != NULL && (__ind->chld[i]->is_dir == 1 || __ind->chld[i]->is_dir == 0) && strcmp(__ind->chld[i]->name, tkn) == 0)
             {
                 chkpath = (char *)realloc(chkpath, sizeof(char) * (strlen(chkpath) + strlen(tkn) + strlen("/") + 1));
                 strcat(chkpath, "/");
@@ -137,13 +131,11 @@ int iNdRm(const char *path, int recursive)
         }
     }
 
-    // fprintf(stdout, "CHKPATHHHH %s %s\n", chkpath, fchkpath);
     if (strcmp(chkpath, fchkpath) != 0)
     {
         free(chkpath);
         free(fchkpath);
         free(tfr);
-        // fprintf(stderr, "node not removed: not exist %s\n", path);
         return 0;
     }
     iNode *nodeToDelete = __ind;
@@ -152,21 +144,17 @@ int iNdRm(const char *path, int recursive)
         free(tfr);
         free(chkpath);
         free(fchkpath);
-        // fprintf(stdout, "node %s not removed: bad flag 1\n", nodeToDelete->fPth);
         return 0;
     }
 
-    if (__ind->prnt != NULL)
+    while (__ind->prnt != NULL)
         __ind = __ind->prnt;
-    // removing node , there is no way
-
-    int result = rmNode(nodeToDelete);
+    int result = rmNode(nodeToDelete, 0);
     if (result)
     {
         nodeToDelete = NULL;
         free(__cwd);
         __cwd = strdup("/");
-        // fprintf(stdout, "node removed\n");
     }
     free(chkpath);
     free(fchkpath);
@@ -190,7 +178,9 @@ int iNdChDir(const char *path)
         strcat(str, path);
     }
     if (path == NULL || str == NULL)
+    {
         return 0;
+    }
     while ((tkn = strsep(&str, "/")) != NULL)
     {
         if (strcmp(tkn, ".") == 0)
@@ -209,12 +199,10 @@ int iNdChDir(const char *path)
         }
         if (!iNdCkExst(tkn))
         {
-            // fprintf(stdout, "chdir error: dir does not exists { %s }\n", tkn);
             free(tfr);
             return 0;
         }
     }
-    // printf("cd %s %s\n", __cwd, __ind->fPth);
     free(__cwd);
     __cwd = strdup(__ind->fPth);
     free(tfr);
@@ -256,23 +244,20 @@ int iNdMkObj(const char *path, _ushrtint o_type, _uint o_size)
             continue;
         if (!iNdCkExst(tkn))
         {
-            if(isCreated && newNode != NULL){
-                iNdRm(newNode->fPth, 0);
-                newNode = NULL;
+            if (isCreated && newNode != NULL)
+            {
                 isCreated = 0;
+                rmNode(newNode, 0);
                 break;
             }
             if (!__ind->is_dir)
             {
-                // fprintf(stderr, "error: impossible to create object in file\n");
                 continue;
             }
             if (__ocpdsz + o_size > __dsksz || strlen(__ind->fPth) + strlen(tkn) + strlen("/") > 128)
             {
-                // fprintf(stderr, "error: bad object name length or not enough space on disk\n");
-                free(newpth);
-                free(tfr);
-                return 0;
+                isCreated = 0;
+                break;
             }
             isCreated = 1;
             ++__ind->chldCnt;
@@ -293,11 +278,9 @@ int iNdMkObj(const char *path, _ushrtint o_type, _uint o_size)
             strcat(newNode->fPth, "/");
             __ind->chld[__ind->chldCnt - 1] = newNode;
             __ocpdsz += o_size;
-            // fprintf(stdout, "created %s in %s\t%d\t%d\n", newNode->name, __ind->fPth, newNode->is_dir, newNode->objSz);
-            // free(tfr);
-            // return 1;
         }
     }
+    free(newpth);
     free(tfr);
     return isCreated;
 }
@@ -306,18 +289,15 @@ int create(int disk_size)
 {
     if (chkDsk(__ind))
     {
-        // fprintf(stderr, "error: disk already exists\n");
         return 0;
     }
     if (disk_size <= 0)
     {
-        // fprintf(stderr, "error: bad disk size\n");
         return 0;
     }
     __ind = (iNode *)malloc(sizeof(iNode));
     if (__ind == NULL)
     {
-        // fprintf(stderr, "error: memory not allocated. aborting file_manager\n");
         exit(0);
     }
     __ind->chld = NULL;
@@ -330,7 +310,6 @@ int create(int disk_size)
     __cwd = strdup("/");
     __dsksz = disk_size;
     __ocpdsz = 0;
-    // fprintf(stdout, "created file manager with disk size %d bytes\n", __dsksz);
     return 1;
 }
 
@@ -353,9 +332,7 @@ int iNdCkExst(const char *o_name)
     for (_uint i = 0; i < __ind->chldCnt; ++i)
     {
         // if (__ind->chld != NULL && strcmp(__ind->chld[i]->name, o_name) == 0 /*&& __ind->chld[i]->is_dir*/)
-        if(__ind->chld != NULL && __ind->chld[i] != NULL && __ind->chld[i]->prnt != NULL
-            && (__ind->chld[i]->is_dir == 1 || __ind->chld[i]->is_dir == 0) 
-            && strcmp(__ind->chld[i]->name, o_name) == 0)
+        if (__ind->chld != NULL && __ind->chld[i] != NULL && __ind->chld[i]->prnt != NULL && (__ind->chld[i]->is_dir == 1 || __ind->chld[i]->is_dir == 0) && strcmp(__ind->chld[i]->name, o_name) == 0)
         {
             __ind = __ind->chld[i];
             return 1;
@@ -384,7 +361,7 @@ int vldTkn(const char *tkn)
 int iNdDstr()
 {
     iNdChDir("/");
-    rmNode(__ind);
+    rmNode(__ind, 1);
     free(__cwd);
     free(__ind);
     __ind = NULL;
@@ -404,16 +381,19 @@ void get_cur_dir(char *dst)
     // fprintf(stdout, "CUR_DIR: %s\n", __cwd);
 }
 
-void printTree(iNode *node){
+void printTree(iNode *node)
+{
     printf("is_dir: %hu\n", node->is_dir);
     printf("objSz: %u\n", node->objSz);
     printf("chldCnt: %u\n", node->chldCnt);
     printf("name: %s\n", node->name);
     printf("fPth: %s\n\n", node->fPth);
     // Print information about children, if any
-    if (node->chldCnt > 0 && node->chld != NULL) {
+    if (node->chldCnt > 0 && node->chld != NULL)
+    {
         printf("Children:\n");
-        for (_uint i = 0; i < node->chldCnt; ++i) {
+        for (_uint i = 0; i < node->chldCnt; ++i)
+        {
             printf("Child %u:\n", i + 1);
             printTree(node->chld[i]);
         }
