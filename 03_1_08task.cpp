@@ -263,6 +263,8 @@ int iNdChDir(const char *path)
 // o_type: 1 - folder, 0 - file
 int iNdMkObj(const char *path, _ushrtint o_type, _uint o_size)
 {
+    int isCreated = 0;
+    iNode *newNode = NULL;
     while (__ind->prnt != NULL)
         __ind = __ind->prnt;
     char *tkn, *newpth, *tfr;
@@ -293,6 +295,12 @@ int iNdMkObj(const char *path, _ushrtint o_type, _uint o_size)
             continue;
         if (!iNdCkExst(tkn))
         {
+            if(isCreated && newNode != NULL){
+                iNdRm(newNode->fPth, 0);
+                newNode = NULL;
+                free(tfr);
+                return 0;
+            }
             if (!__ind->is_dir)
             {
                 // fprintf(stderr, "error: impossible to create object in file\n");
@@ -305,33 +313,32 @@ int iNdMkObj(const char *path, _ushrtint o_type, _uint o_size)
                 free(tfr);
                 return 0;
             }
+            isCreated = 1;
             ++__ind->chldCnt;
             if (__ind->chld == NULL)
                 __ind->chld = (iNode **)malloc(sizeof(iNode *));
             else
                 __ind->chld = (iNode **)realloc(__ind->chld, sizeof(iNode *) * __ind->chldCnt);
-            iNode *newFm = (iNode *)malloc(sizeof(iNode));
-            newFm->chld = NULL;
-            newFm->chldCnt = 0;
-            newFm->is_dir = o_type;
-            newFm->name = strdup(tkn);
-            newFm->objSz = o_size;
-            newFm->prnt = __ind;
-            newFm->fPth = (char *)calloc(sizeof(char), (strlen(__ind->fPth) + strlen(tkn) + strlen("/") + 1));
-            strcat(newFm->fPth, __ind->fPth);
-            strcat(newFm->fPth, newFm->name);
-            strcat(newFm->fPth, "/");
-            __ind->chld[__ind->chldCnt - 1] = newFm;
+            newNode = (iNode *)malloc(sizeof(iNode));
+            newNode->chld = NULL;
+            newNode->chldCnt = 0;
+            newNode->is_dir = o_type;
+            newNode->name = strdup(tkn);
+            newNode->objSz = o_size;
+            newNode->prnt = __ind;
+            newNode->fPth = (char *)calloc(sizeof(char), (strlen(__ind->fPth) + strlen(tkn) + strlen("/") + 1));
+            strcat(newNode->fPth, __ind->fPth);
+            strcat(newNode->fPth, newNode->name);
+            strcat(newNode->fPth, "/");
+            __ind->chld[__ind->chldCnt - 1] = newNode;
             __ocpdsz += o_size;
-            // fprintf(stdout, "created %s in %s\t%d\t%d\n", newFm->name, __ind->fPth, newFm->is_dir, newFm->objSz);
-            free(tfr);
-            free(newpth);
-            return 1;
+            // fprintf(stdout, "created %s in %s\t%d\t%d\n", newNode->name, __ind->fPth, newNode->is_dir, newNode->objSz);
+            // free(tfr);
+            // return 1;
         }
     }
     free(tfr);
-    free(newpth);
-    return 0;
+    return 1;
 }
 
 int create(int disk_size)

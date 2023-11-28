@@ -17,6 +17,7 @@ int main()
     printf("%d\t", fm.create(1000)); /* expected: 1, passed */
     printf("%d\t", fm.create(1000)); /* expected: 0, passed */
     printf("%d\t", fm.destroy()); /* expected: 1, passed */
+    printf("\n\n");
     // // Test 1 passed
     // // Common file manager test 2
     printf("%d\t", fm.create(1000)); /* expected: 1, passed */
@@ -30,6 +31,7 @@ int main()
     printf("%d\t", fm.create_dir("test_dir")); /* expected: 1, passed */
     printf("%d\t", fm.remove("file2.txt",0)); /* expected: 1, passed */
     printf("%d\t", fm.destroy()); /* expected: 1, passed */
+    printf("\n\n");
     // // Test 2 passed
     // // Common file manager test 3
     printf("%d\t",  fm.create(1000)); /* expected: 1, passed */
@@ -38,13 +40,15 @@ int main()
     printf("%d\t",  fm.change_dir("dir1")); /* expected: 1, passed */
     printf("%d\t",  fm.create_dir("../dir2")); /* expected: 1, passed */
     printf("%d\t",  fm.create_dir("../dir2/dir3")); /* expected: 1, passed */
+    printf("%d\t", fm.remove("/dir2/dir3", 0)); /* expected: 1, passed */
     
+    
+    // printf("%d\t", fm.create_dir("/dir3/dir31")); /* ex pected: 0, */     
     // printf("\n===test3===\n");
     // fm.change_dir("/");
     // printTree(__ind);
     // printf("\n=================\n");
-
-    printf("%d\t", fm.remove("/dir2/dir3", 0)); /* expected: 1, failed */
+    
     // // Test 3 failed
 
 
