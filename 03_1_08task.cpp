@@ -28,7 +28,9 @@ int create_file(const char *path, int file_size);
 int change_dir(const char *path);
 void get_cur_dir(char *dst);
 int remove(const char *path, int recursive);
+int destroy();
 
+int realloc_node(iNode *node, int index);
 int check_disk(iNode *node);
 int init_tree(int disk_size);
 int check_token(const char *tkn);
@@ -39,15 +41,43 @@ int loop_tree(const char *path);
 int change_cwd(const char *path);
 int remove_node(iNode *node);
 int inode_remove(const char *path, int recursive);
+int destroy_tree();
 void realloc_node(iNode *node);
+
+
+int destroy_tree(){
+    loop_tree("/");
+    remove_node(__ind);
+    free(__cwd);
+    __ocpdsz = 0;
+    __dsksz = 0;
+    __ind = NULL;
+    __cwd = NULL;
+    return 1;
+}
+
+int realloc_node(iNode *node, int index){
+    for(_uint i = index; i < node->child_count - 1; ++i){
+        iNode *tmp = node->child[i];
+        node->child[i] = node->child[i + 1];
+        node->child[i + 1] = tmp;
+    }
+    --node->child_count;
+    if(node->child_count == 0) {
+        free(node->child);
+        node->child = NULL;
+        return 1;
+    }
+    node->child = (iNode**)realloc(node->child, sizeof(iNode*)*node->child_count);
+    return 1;
+}
 
 int remove_node(iNode *node){
     if(!node) return 0;
     for(_uint i = 0; i < node->child_count; ++i){
         remove_node(node->child[i]);
-        node->child[i] = NULL;
     }
-    printf("rm node %s\n", node->full_path);
+    // printf("rm node %s\n", node->full_path);
     __ocpdsz -= node->size;
     free(node->name);
     free(node->full_path);
@@ -60,8 +90,7 @@ int remove_node(iNode *node){
 int inode_remove(const char *path, int recursive){
     char *token, *loop_path, *to_free;
     int index = -1;
-    if (strcmp(path, "/") == 0) { return 0; }
-    if(!loop_tree(path)) return 0;
+    if (strcmp(path, "/") == 0 || !loop_tree(path)) { return 0; }
     if(!recursive && __ind->is_dir && __ind->child_count > 0) return 0;
     if (path[0] == '/')
     {
@@ -77,21 +106,25 @@ int inode_remove(const char *path, int recursive){
     iNode *parent_node = del_node->parent;
     loop_tree("/");
     while ((token = strsep(&loop_path, "/")) != NULL && (index = check_exist_move_down(token) >= 0));
-    printf("index: %d\n", index);
-    int is_removed = remove_node(del_node);
-    if(is_removed){
-        parent_node->child[index] = NULL;
-        del_node = NULL;
-        change_cwd("/");
-    }
+    // printf("index: %d\n", index);
+    // int is_removed = remove_node(del_node);
+    // if(is_removed){
+    //     parent_node->child[index] = NULL;
+    //     del_node = NULL;
+    //     change_cwd("/");
+    // }
+    remove_node(del_node);
+    parent_node->child[index] = NULL;
+    del_node = NULL;
+    realloc_node(parent_node, index);
+    change_cwd("/");
     free(to_free);
-    return is_removed;
     return 1;
 }
 
 int change_cwd(const char *path){
     if(!loop_tree(path) || !__ind->is_dir) return 0;
-    printf("cd %s %s\n", __cwd, __ind->full_path);
+    // printf("cd %s %s\n", __cwd, __ind->full_path);
     free(__cwd);
     __cwd = strdup(__ind->full_path);
     return 1;
@@ -153,6 +186,7 @@ int loop_tree(const char *path)
 // mode: 1 - folder, 0 - file
 int make_obj(const char *path, _ushrtint mode, _uint size)
 {
+    if(__ocpdsz + size > __dsksz) return 0;
     if(loop_tree(path)) return 0;
     int is_created = 0;
     iNode *newNode = NULL;
@@ -205,7 +239,7 @@ int make_obj(const char *path, _ushrtint mode, _uint size)
         } 
         __ind->child[__ind->child_count - 1] = newNode;
         __ocpdsz += size;
-        printf("mk %s %s\n", newNode->name, newNode->full_path);
+        // printf("mk %s %s\n", newNode->name, newNode->full_path);
     }
     free(to_free);
     return is_created;
@@ -233,6 +267,7 @@ int init_tree(int disk_size)
     char *name = strdup("/");
     make_node(__ind, 1, 0, &name, &full_path, NULL);
     __cwd = strdup(__ind->full_path);
+    __dsksz = disk_size;
     return 1;
 }
 
@@ -248,6 +283,7 @@ int check_exist_move_down(const char *token)
     }
     return -1;
 }
+
 int check_token(const char *tkn)
 {
     if (strlen(tkn) <= 0 || strlen(tkn) > 32 || !strcmp(tkn, "") || tkn[0] == '\0' /*!strcmp(tkn, ".") || !strcmp(tkn, "..") || tkn[0] == '.' ||*/)
@@ -274,7 +310,7 @@ void setup_file_manager(file_manager_t *fm)
     fm->get_cur_dir = get_cur_dir;
     fm->remove = remove;
     // fm->copy = copy;
-    // fm->destroy = destroy;
+    fm->destroy = destroy;
 }
 
 int create(int disk_size) { return check_disk(__ind) == 0 ? init_tree(disk_size) : 0; }
@@ -283,6 +319,7 @@ int create_file(const char *path, int file_size) { return check_disk(__ind) == 0
 int change_dir(const char *path) { return check_disk(__ind) == 0 ? 0 : change_cwd((char *)path); }
 int check_disk(iNode *node) { return node == NULL ? 0 : 1; }
 int remove(const char *path, int recursive) { return check_disk(__ind) == 0 ? 0 : inode_remove(path, recursive); }
+int destroy() { return check_disk(__ind) == 0 ? 0 : destroy_tree(); }
 void get_cur_dir(char *dst)
 {
     printf("cwd %s\n", __cwd);
