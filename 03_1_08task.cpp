@@ -44,7 +44,7 @@ iNode *get_node(const char *path)
     if (path[0] == '/')
     {
         to_free = loop_path = strdup(path);
-        full_path = (char *)realloc(full_path, sizeof(char) * strlen(path) + 1);
+        full_path = (char *)realloc(full_path, sizeof(char) * strlen(loop_path) + 1);
         strcpy(full_path, loop_path);
     }
     if (path[0] != '/')
@@ -52,11 +52,12 @@ iNode *get_node(const char *path)
         to_free = loop_path = (char *)calloc(sizeof(char), (strlen(__cwd->full_path) + strlen(path) + 1));
         strcat(loop_path, __cwd->full_path);
         strcat(loop_path, path);
-        full_path = (char *)realloc(full_path, sizeof(char) * strlen(path) + 1);
+        full_path = (char *)realloc(full_path, sizeof(char) * strlen(loop_path) + 1);
         strcpy(full_path, loop_path);
     }
-    if (loop_path == NULL || path == NULL)
+    if (loop_path == NULL || path == NULL){
         return 0;
+    }
 
     while ((token = strsep(&loop_path, "/")) != NULL)
     {
@@ -140,7 +141,8 @@ int make_obj(const char *path, _ushrtint mode, _uint size)
         else{
             __ind->child = (iNode **)realloc(__ind->child, sizeof(iNode *) * __ind->child_count);
         } 
-        __ind->child[__ind->child_count] = newNode;
+        __ind->child[__ind->child_count - 1] = newNode;
+        __ocpdsz += size;
     }
     free(to_free);
     return is_created;
@@ -217,7 +219,7 @@ void printTree(iNode *node)
     printf("name: %s\n", node->name);
     printf("fPth: %s\n\n", node->full_path);
     // Print information about children, if any
-    if (node->child_count > 0 && node->child != NULL)
+    if (node->child != NULL)
     {
         printf("Children:\n");
         for (_uint i = 0; i < node->child_count; ++i)

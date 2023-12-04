@@ -10,6 +10,7 @@ int main()
     setup_file_manager(&fm);
     fm.create(1414);
     fm.create_dir("/a");
+    fm.create_file("file.txt", 10);
     printTree(__cwd);
     // // // Common file manager test 1
     // printf("%d\t", fm.create(1000)); /* expected: 1, passed */
