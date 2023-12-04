@@ -58,11 +58,11 @@ int remove_node(iNode *node){
 }
 
 int inode_remove(const char *path, int recursive){
-    if (strcmp(path, "/") == 0)
-    {
-        return 0;
-    }
     char *token, *loop_path, *to_free;
+    int index = -1;
+    if (strcmp(path, "/") == 0) { return 0; }
+    if(!loop_tree(path)) return 0;
+    if(!recursive && __ind->is_dir && __ind->child_count > 0) return 0;
     if (path[0] == '/')
     {
         to_free = loop_path = strdup(path);
@@ -73,16 +73,20 @@ int inode_remove(const char *path, int recursive){
         strcat(loop_path, __cwd);
         strcat(loop_path, path);
     }
-    if(!loop_tree(path)) return 0;
-    if(!recursive && __ind->is_dir && __ind->child_count > 0) return 0;
     iNode *del_node = __ind;
+    iNode *parent_node = del_node->parent;
     loop_tree("/");
+    while ((token = strsep(&loop_path, "/")) != NULL && (index = check_exist_move_down(token) >= 0));
+    printf("index: %d\n", index);
     int is_removed = remove_node(del_node);
     if(is_removed){
+        parent_node->child[index] = NULL;
         del_node = NULL;
         change_cwd("/");
     }
+    free(to_free);
     return is_removed;
+    return 1;
 }
 
 int change_cwd(const char *path){
@@ -127,7 +131,7 @@ int loop_tree(const char *path)
                 __ind = __ind->parent;
             continue;
         }
-        if(check_exist_move_down(token)){
+        if(check_exist_move_down(token) != -1){
             passed_path = (char *)realloc(passed_path, sizeof(char) * (strlen(passed_path) + strlen(token) + strlen("/") + 1));
             strcat(passed_path, "/");
             strcat(passed_path, token);
@@ -171,7 +175,7 @@ int make_obj(const char *path, _ushrtint mode, _uint size)
     {
         if (!strcmp(token, ".") || 
             !check_token(token) || 
-            check_exist_move_down(token))
+            check_exist_move_down(token) >= 0)
         continue;
         if (!strcmp(token, ".."))
         {
@@ -239,10 +243,10 @@ int check_exist_move_down(const char *token)
         if (__ind->child != NULL && __ind->child[i] != NULL && (__ind->child[i]->is_dir == 1 || __ind->child[i]->is_dir == 0) && strcmp(__ind->child[i]->name, token) == 0)
         {
             __ind = __ind->child[i];
-            return 1;
+            return i;
         }
     }
-    return 0;
+    return -1;
 }
 int check_token(const char *tkn)
 {
