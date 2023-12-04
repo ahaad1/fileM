@@ -105,14 +105,18 @@ int inode_remove(const char *path, int recursive){
     iNode *del_node = __ind;
     iNode *parent_node = del_node->parent;
     loop_tree("/");
-    while ((token = strsep(&loop_path, "/")) != NULL && (index = check_exist_move_down(token) >= 0));
-    // printf("index: %d\n", index);
-    // int is_removed = remove_node(del_node);
-    // if(is_removed){
-    //     parent_node->child[index] = NULL;
-    //     del_node = NULL;
-    //     change_cwd("/");
-    // }
+    while ((token = strsep(&loop_path, "/")) != NULL){
+        if (!strcmp(token, ".") || !check_token(token))
+            continue;
+        if (!strcmp(token, ".."))
+        {
+            if (__ind->parent != NULL)
+                __ind = __ind->parent;
+            continue;
+        }
+        index = check_exist_move_down(token);
+    }
+    loop_tree("/");
     remove_node(del_node);
     parent_node->child[index] = NULL;
     del_node = NULL;
@@ -156,8 +160,9 @@ int loop_tree(const char *path)
 
     while ((token = strsep(&loop_path, "/")) != NULL)
     {
-        if (!strcmp(token, ".") || !check_token(token))
+        if (!strcmp(token, ".") || !check_token(token)){
             continue;
+        }
         if (!strcmp(token, ".."))
         {
             if (__ind->parent != NULL)
@@ -220,6 +225,10 @@ int make_obj(const char *path, _ushrtint mode, _uint size)
         if(is_created && newNode != NULL){
             is_created = 0;
             remove_node(newNode);
+            break;
+        }
+        if(!__ind->is_dir){
+            is_created = 0;
             break;
         }
         is_created = 1;
