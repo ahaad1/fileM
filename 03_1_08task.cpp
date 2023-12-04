@@ -27,17 +27,63 @@ int create_dir(const char *path);
 int create_file(const char *path, int file_size);
 int change_dir(const char *path);
 void get_cur_dir(char *dst);
+int remove(const char *path, int recursive);
 
 int check_disk(iNode *node);
 int init_tree(int disk_size);
 int check_token(const char *tkn);
-int realloc_tree(iNode *node);
 void make_node(iNode *main_node, _ushrtint is_dir, _uint size, char **name, char **full_path, iNode *parent);
-int remove_node(iNode *node);
 int make_obj(const char *path, _ushrtint mode, _uint size);
 int check_exist_move_down(const char *o_name);
 int loop_tree(const char *path);
 int change_cwd(const char *path);
+int remove_node(iNode *node);
+int inode_remove(const char *path, int recursive);
+void realloc_node(iNode *node);
+
+int remove_node(iNode *node){
+    if(!node) return 0;
+    for(_uint i = 0; i < node->child_count; ++i){
+        remove_node(node->child[i]);
+        node->child[i] = NULL;
+    }
+    printf("rm node %s\n", node->full_path);
+    __ocpdsz -= node->size;
+    free(node->name);
+    free(node->full_path);
+    free(node->child);
+    free(node);
+    node = NULL;
+    return 1;
+}
+
+int inode_remove(const char *path, int recursive){
+    if (strcmp(path, "/") == 0)
+    {
+        return 0;
+    }
+    char *token, *loop_path, *to_free;
+    if (path[0] == '/')
+    {
+        to_free = loop_path = strdup(path);
+    }
+    if (path[0] != '/')
+    {
+        to_free = loop_path = (char *)calloc(sizeof(char), (strlen(__cwd) + strlen(path) + 1));
+        strcat(loop_path, __cwd);
+        strcat(loop_path, path);
+    }
+    if(!loop_tree(path)) return 0;
+    if(!recursive && __ind->is_dir && __ind->child_count > 0) return 0;
+    iNode *del_node = __ind;
+    loop_tree("/");
+    int is_removed = remove_node(del_node);
+    if(is_removed){
+        del_node = NULL;
+        change_cwd("/");
+    }
+    return is_removed;
+}
 
 int change_cwd(const char *path){
     if(!loop_tree(path) || !__ind->is_dir) return 0;
@@ -52,6 +98,7 @@ int loop_tree(const char *path)
     int ret_val = 0;
     while (__ind->parent != NULL)
         __ind = __ind->parent;
+    if(!strcmp(path, "/")) return 1;
     char *token, *loop_path, *to_free, 
          *passed_path = (char *)calloc(sizeof(char), 1), 
          *full_path = (char *)calloc(sizeof(char), 1);
@@ -99,12 +146,10 @@ int loop_tree(const char *path)
     return ret_val;
 }
 
-int remove_node(iNode *node){
-    return 1;
-}
 // mode: 1 - folder, 0 - file
 int make_obj(const char *path, _ushrtint mode, _uint size)
 {
+    if(loop_tree(path)) return 0;
     int is_created = 0;
     iNode *newNode = NULL;
     while (__ind->parent != NULL)
@@ -160,10 +205,6 @@ int make_obj(const char *path, _ushrtint mode, _uint size)
     }
     free(to_free);
     return is_created;
-}
-
-int realloc_tree(iNode *node){
-    return 1;
 }
 
 void make_node(iNode *main_node, _ushrtint is_dir, _uint size, char **name, char **full_path, iNode *parent)
@@ -227,7 +268,7 @@ void setup_file_manager(file_manager_t *fm)
     fm->create_file = create_file;
     fm->change_dir = change_dir;
     fm->get_cur_dir = get_cur_dir;
-    // fm->remove = remove;
+    fm->remove = remove;
     // fm->copy = copy;
     // fm->destroy = destroy;
 }
@@ -237,9 +278,10 @@ int create_dir(const char *path) { return check_disk(__ind) == 0 ? 0 : make_obj(
 int create_file(const char *path, int file_size) { return check_disk(__ind) == 0 ? 0 : make_obj(path, 0, file_size); }
 int change_dir(const char *path) { return check_disk(__ind) == 0 ? 0 : change_cwd((char *)path); }
 int check_disk(iNode *node) { return node == NULL ? 0 : 1; }
+int remove(const char *path, int recursive) { return check_disk(__ind) == 0 ? 0 : inode_remove(path, recursive); }
 void get_cur_dir(char *dst)
 {
-    printf("\ncwd %s\n", __cwd);
+    printf("cwd %s\n", __cwd);
 }
 
 void printTree(iNode *node)
@@ -249,12 +291,12 @@ void printTree(iNode *node)
     printf("chldCnt: %u\n", node->child_count);
     printf("name: %s\n", node->name);
     printf("fPth: %s\n\n", node->full_path);
-    // Print information about children, if any
     if (node->child != NULL)
     {
         printf("Children:\n");
         for (_uint i = 0; i < node->child_count; ++i)
         {
+            if(node->child[i] == NULL) continue;
             printf("Child %u:\n", i + 1);
             printTree(node->child[i]);
         }
