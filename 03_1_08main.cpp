@@ -11,6 +11,9 @@ int main()
     fm.create(1414);
     fm.create_dir("/a");
     fm.create_file("file.txt", 10);
+    fm.change_dir("a");
+    fm.get_cur_dir((char*)"");
+    fm.create_dir("b");
     printTree(__cwd);
     // // // Common file manager test 1
     // printf("%d\t", fm.create(1000)); /* expected: 1, passed */
