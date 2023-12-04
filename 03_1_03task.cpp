@@ -57,6 +57,8 @@ int destroy_tree(){
 }
 
 int realloc_node(iNode *node, int index){
+    // free(node->child[index]);
+    node->child[index] = NULL;
     for(_uint i = index; i < node->child_count - 1; ++i){
         iNode *tmp = node->child[i];
         node->child[i] = node->child[i + 1];
@@ -117,11 +119,13 @@ int inode_remove(const char *path, int recursive){
         index = check_exist_move_down(token);
     }
     loop_tree("/");
+    if(!strcmp(del_node->full_path, __cwd)){
+        change_cwd("/");    
+    }
     remove_node(del_node);
-    parent_node->child[index] = NULL;
-    del_node = NULL;
     realloc_node(parent_node, index);
-    change_cwd("/");
+    // parent_node->child[index] = NULL;
+    del_node = NULL;
     free(to_free);
     return 1;
 }
@@ -291,9 +295,10 @@ int init_tree(int disk_size)
 
 int check_exist_move_down(const char *token)
 {
+    if(__ind->child == NULL) return -1;
     for (_uint i = 0; i < __ind->child_count; ++i)
     {
-        if (__ind->child != NULL && __ind->child[i] != NULL && (__ind->child[i]->is_dir == 1 || __ind->child[i]->is_dir == 0) && strcmp(__ind->child[i]->name, token) == 0)
+        if (__ind->child[i] != NULL && strcmp(__ind->child[i]->name, token) == 0)
         {
             __ind = __ind->child[i];
             return i;

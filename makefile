@@ -6,7 +6,7 @@ default: all
 
 all: myprogram
 
-myprogram: 03_1_08main.cpp
-	$(CC) -fsanitize=address -fdiagnostics-color=always $(CFLAGS) -o 03_1_08main 03_1_08main.cpp 
-	./03_1_08main  
-	$(RM) 03_1_08main 
+myprogram: 03_1_03main.cpp
+	$(CC) -fsanitize=address -fdiagnostics-color=always $(CFLAGS) -o 03_1_03main 03_1_03main.cpp 
+	./03_1_03main  
+	$(RM) 03_1_03main 
