@@ -10,7 +10,7 @@
                 "${file}",
                 "-o",
                 "${fileDirname}/${fileBasenameNoExtension}",
-                "-fsanitize=address",
+                // "-fsanitize=address",
             ],
             "options": {
                 "cwd": "${fileDirname}"

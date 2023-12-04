@@ -18,7 +18,8 @@ typedef struct iNode
 } iNode;
 
 _uint __dsksz = 0, __ocpdsz = 0;
-iNode *__ind = NULL, *__cwd = NULL;
+iNode *__ind = NULL;
+char *__cwd = NULL;
 
 void setup_file_manager(file_manager_t *fm);
 int create(int disk_size);
@@ -34,21 +35,21 @@ int realloc_tree(iNode *node);
 void make_node(iNode *main_node, _ushrtint is_dir, _uint size, char **name, char **full_path, iNode *parent);
 int remove_node(iNode *node);
 int make_obj(const char *path, _ushrtint mode, _uint size);
-int check_exist_move_down(iNode *node, const char *o_name);
-iNode *get_node(const char *path);
+int check_exist_move_down(const char *o_name);
+int loop_tree(const char *path);
 int change_cwd(const char *path);
 
 int change_cwd(const char *path){
-    iNode *findNode = get_node(path);
-    if(findNode == NULL) return 0;
-    if(!findNode->is_dir) return 0;
-    else __cwd = findNode;
+    if(!loop_tree(path) || !__ind->is_dir) return 0;
+    printf("cd %s %s\n", __cwd, __ind->full_path);
+    free(__cwd);
+    __cwd = strdup(__ind->full_path);
     return 1;
 }
 
-iNode *get_node(const char *path)
+int loop_tree(const char *path)
 {
-    iNode *ret_node = NULL;
+    int ret_val = 0;
     while (__ind->parent != NULL)
         __ind = __ind->parent;
     char *token, *loop_path, *to_free, 
@@ -62,14 +63,11 @@ iNode *get_node(const char *path)
     }
     if (path[0] != '/')
     {
-        to_free = loop_path = (char *)calloc(sizeof(char), (strlen(__cwd->full_path) + strlen(path) + 1));
-        strcat(loop_path, __cwd->full_path);
+        to_free = loop_path = (char *)calloc(sizeof(char), (strlen(__cwd) + strlen(path) + 1));
+        strcat(loop_path, __cwd);
         strcat(loop_path, path);
         full_path = (char *)realloc(full_path, sizeof(char) * strlen(loop_path) + 1);
         strcpy(full_path, loop_path);
-    }
-    if (loop_path == NULL || path == NULL){
-        return 0;
     }
 
     while ((token = strsep(&loop_path, "/")) != NULL)
@@ -82,22 +80,23 @@ iNode *get_node(const char *path)
                 __ind = __ind->parent;
             continue;
         }
-        for(_uint i = 0; i < __ind->child_count; ++i){
-            if(!strcmp(__ind->child[i]->name, token)){
-                __ind = __ind->child[i];
-                passed_path = (char *)realloc(passed_path, sizeof(char) * (strlen(passed_path) + strlen(token) + strlen("/") + 1));
-                strcat(passed_path, "/");
-                strcat(passed_path, token);
-            }
+        if(check_exist_move_down(token)){
+            passed_path = (char *)realloc(passed_path, sizeof(char) * (strlen(passed_path) + strlen(token) + strlen("/") + 1));
+            strcat(passed_path, "/");
+            strcat(passed_path, token);
+        }
+        else{
+            ret_val = 0;
+            break;
         }
     }
     if(!strcmp(full_path, passed_path)){
-        ret_node = __ind;
+        ret_val = 1;
     }
     free(to_free);
     free(full_path);
     free(passed_path);
-    return ret_node;
+    return ret_val;
 }
 
 int remove_node(iNode *node){
@@ -106,13 +105,10 @@ int remove_node(iNode *node){
 // mode: 1 - folder, 0 - file
 int make_obj(const char *path, _ushrtint mode, _uint size)
 {
-    if(get_node(path) != NULL) return 0;
     int is_created = 0;
-    iNode *workingNode = NULL;
     iNode *newNode = NULL;
     while (__ind->parent != NULL)
         __ind = __ind->parent;
-    workingNode = __ind;
     char *token, *loop_path, *to_free;
     if (path[0] == '/')
     {
@@ -120,20 +116,22 @@ int make_obj(const char *path, _ushrtint mode, _uint size)
     }
     if (path[0] != '/')
     {
-        to_free = loop_path = (char *)calloc(sizeof(char), (strlen(__cwd->full_path) + strlen(path) + 1));
-        strcat(loop_path, __cwd->full_path);
+        to_free = loop_path = (char *)calloc(sizeof(char), (strlen(__cwd) + strlen(path) + 1));
+        strcat(loop_path, __cwd);
         strcat(loop_path, path);
     }
-    if (loop_path == NULL || path == NULL)
+    if (!loop_path || !path)
         return 0;
     while ((token = strsep(&loop_path, "/")) != NULL)
     {
-        if (!strcmp(token, ".") || !check_token(token))
+        if (!strcmp(token, ".") || 
+            !check_token(token) || 
+            check_exist_move_down(token))
         continue;
         if (!strcmp(token, ".."))
         {
-            if (workingNode->parent != NULL)
-                workingNode = workingNode->parent;
+            if (__ind->parent != NULL)
+                __ind = __ind->parent;
             continue;
         }
         if(is_created && newNode != NULL){
@@ -141,24 +139,24 @@ int make_obj(const char *path, _ushrtint mode, _uint size)
             remove_node(newNode);
             break;
         }
-        if(check_exist_move_down(workingNode, token)) continue;
         is_created = 1;
         newNode = (iNode*)malloc(sizeof(iNode));
         char *new_node_name = strdup(token);
-        char *new_node_full_path = (char*)calloc(sizeof(char), strlen(workingNode->full_path) + strlen(token) + strlen("/") + 1);
-        strcat(new_node_full_path, workingNode->full_path);
+        char *new_node_full_path = (char*)calloc(sizeof(char), strlen(__ind->full_path) + strlen(token) + strlen("/") + 1);
+        strcat(new_node_full_path, __ind->full_path);
         strcat(new_node_full_path, token);
         strcat(new_node_full_path, "/");
-        make_node(newNode, mode, size, &new_node_name, &new_node_full_path, workingNode);        
-        ++workingNode->child_count;
-        if(workingNode->child == NULL){
-            workingNode->child = (iNode**)malloc(sizeof(iNode*));
+        make_node(newNode, mode, size, &new_node_name, &new_node_full_path, __ind);        
+        ++__ind->child_count;
+        if(__ind->child == NULL){
+            __ind->child = (iNode**)malloc(sizeof(iNode*));
         }
         else{
-            workingNode->child = (iNode **)realloc(workingNode->child, sizeof(iNode *) * workingNode->child_count);
+            __ind->child = (iNode **)realloc(__ind->child, sizeof(iNode *) * __ind->child_count);
         } 
-        workingNode->child[workingNode->child_count - 1] = newNode;
+        __ind->child[__ind->child_count - 1] = newNode;
         __ocpdsz += size;
+        printf("mk %s %s\n", newNode->name, newNode->full_path);
     }
     free(to_free);
     return is_created;
@@ -189,23 +187,22 @@ int init_tree(int disk_size)
     char *full_path = strdup("/");
     char *name = strdup("/");
     make_node(__ind, 1, 0, &name, &full_path, NULL);
-    __cwd = __ind;
+    __cwd = strdup(__ind->full_path);
     return 1;
 }
 
-int check_exist_move_down(iNode *node, const char *token)
+int check_exist_move_down(const char *token)
 {
-    for (_uint i = 0; i < node->child_count; ++i)
+    for (_uint i = 0; i < __ind->child_count; ++i)
     {
-        if (node->child != NULL && node->child[i] != NULL && (node->child[i]->is_dir == 1 || node->child[i]->is_dir == 0) && strcmp(node->child[i]->name, token) == 0)
+        if (__ind->child != NULL && __ind->child[i] != NULL && (__ind->child[i]->is_dir == 1 || __ind->child[i]->is_dir == 0) && strcmp(__ind->child[i]->name, token) == 0)
         {
-            node = node->child[i];
+            __ind = __ind->child[i];
             return 1;
         }
     }
     return 0;
 }
-// sdfsdf
 int check_token(const char *tkn)
 {
     if (strlen(tkn) <= 0 || strlen(tkn) > 32 || !strcmp(tkn, "") || tkn[0] == '\0' /*!strcmp(tkn, ".") || !strcmp(tkn, "..") || tkn[0] == '.' ||*/)
@@ -242,7 +239,7 @@ int change_dir(const char *path) { return check_disk(__ind) == 0 ? 0 : change_cw
 int check_disk(iNode *node) { return node == NULL ? 0 : 1; }
 void get_cur_dir(char *dst)
 {
-    printf("\n---%s---\n", __cwd->full_path);
+    printf("\ncwd %s\n", __cwd);
 }
 
 void printTree(iNode *node)

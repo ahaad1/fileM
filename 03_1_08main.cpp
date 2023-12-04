@@ -9,12 +9,16 @@ int main()
     file_manager_t fm;
     setup_file_manager(&fm);
     fm.create(1414);
+    fm.create_dir("a");
     fm.create_dir("/a");
     fm.create_file("file.txt", 10);
     fm.change_dir("a");
+    fm.create_file("file.txt", 10);
+    fm.change_dir("file.txt");
     fm.get_cur_dir((char*)"");
     fm.create_dir("b");
-    printTree(__cwd);
+    fm.change_dir("/");
+    // printTree(get_node(__cwd));
     // // // Common file manager test 1
     // printf("%d\t", fm.create(1000)); /* expected: 1, passed */
     // printf("%d\t", fm.create_file("test_file",1000+1)); /* expected: 0, passed */
