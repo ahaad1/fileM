@@ -205,7 +205,7 @@ int check_exist_move_down(iNode *node, const char *token)
     }
     return 0;
 }
-
+// sdfsdf
 int check_token(const char *tkn)
 {
     if (strlen(tkn) <= 0 || strlen(tkn) > 32 || !strcmp(tkn, "") || tkn[0] == '\0' /*!strcmp(tkn, ".") || !strcmp(tkn, "..") || tkn[0] == '.' ||*/)
