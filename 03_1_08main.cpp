@@ -63,8 +63,8 @@ int main()
     cout << (fm.create_dir("../dir2/dir22") == 1);          //, passed
     cout << (fm.create_dir("..") == 0);                     //, passed
     cout << (fm.create_dir("../dir2/.") == 0);              //, passed
-    cout << (fm.change_dir("dir2") == 0);                   //, passed
-    cout << (fm.change_dir("dir11") == 1);                  //, passed
+    cout << (fm.change_dir("dir2") == 0);                   //, passed ???
+    cout << (fm.change_dir("dir11") == 1);                  //, passed ??? 
     cout << (fm.remove("../../dir2/file1", 0) == 1);        //, failed
     cout << (fm.create_dir("../../dir2/file1") == 1);       //, passed
     cout << (fm.remove("../../dir2/file1", 0) == 1);        //, passed
@@ -77,11 +77,11 @@ int main()
     cout << (fm.change_dir("/dir1") == 1);                  //, passed
     cout << (fm.change_dir("./dir11") == 1);                //, passed
     cout << (fm.change_dir("..") == 1);                     //, passed
-    cout << (fm.create_file("ddir2/file1", 1000 - 1) == 0); //, passed1
+    cout << (fm.create_file("ddir2/file1", 1000 - 1) == 0); //, passed
     cout << (fm.create_file("./dir11/file.txt", 1) == 1);   //, passed
     cout << (fm.remove("dir11", 0) == 0);                   //, passed
     cout << (fm.remove("./dir11", 0) == 0);                 //, passed
     cout << (fm.remove("./dir11", 1) == 1) << endl;         //, passed
-    fm.destroy();
+    // fm.destroy();
     return 0;
 }

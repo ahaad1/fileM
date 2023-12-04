@@ -90,7 +90,7 @@ int remove_node(iNode *node){
 int inode_remove(const char *path, int recursive){
     char *token, *loop_path, *to_free;
     int index = -1;
-    if (strcmp(path, "/") == 0 || !loop_tree(path)) { return 0; }
+    if (!strcmp(path, "/") || !loop_tree(path)) { return 0; }
     if(!recursive && __ind->is_dir && __ind->child_count > 0) return 0;
     if (path[0] == '/')
     {
@@ -160,13 +160,22 @@ int loop_tree(const char *path)
 
     while ((token = strsep(&loop_path, "/")) != NULL)
     {
-        if (!strcmp(token, ".") || !check_token(token)){
+        if (!strcmp(token, ".")){
+            passed_path = (char *)realloc(passed_path, sizeof(char) * (strlen(passed_path) + strlen(token) + strlen("/") + 1));
+            strcat(passed_path, "/");
+            strcat(passed_path, token);
             continue;
         }
         if (!strcmp(token, ".."))
         {
             if (__ind->parent != NULL)
                 __ind = __ind->parent;
+            passed_path = (char *)realloc(passed_path, sizeof(char) * (strlen(passed_path) + strlen(token) + strlen("/") + 1));
+            strcat(passed_path, "/");
+            strcat(passed_path, token);
+            continue;
+        }
+        if(!check_token(token)){
             continue;
         }
         if(check_exist_move_down(token) != -1){
