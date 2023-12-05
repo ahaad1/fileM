@@ -1,0 +1,9 @@
+{
+    "editor.bracketPairColorization.enabled": true,
+    // "editor.guides.bracketPairs": "active",
+    "files.associations": {
+        "os_file.h": "c",
+        "format": "cpp",
+        "sstream": "cpp",
+    },
+}

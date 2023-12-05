@@ -1,12 +1,12 @@
-CC     = gcc
-CFLAGS = -Wall -g 
+CC     = g++
+CFLAGS = -Wall -g
 RM     = rm -f
 
 default: all
 
 all: myprogram
 
-myprogram: 3_1_8main.cpp
-	$(CC) $(CFLAGS) -o main_test 3_1_8main.cpp -fsanitize=address
-	./main_test 
-	$(RM) main_test
+myprogram: 03_1_03main.cpp
+	$(CC) -fsanitize=address -fdiagnostics-color=always $(CFLAGS) -o 03_1_03main 03_1_03main.cpp 
+	./03_1_03main  
+	$(RM) 03_1_03main 
