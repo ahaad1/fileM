@@ -19,23 +19,43 @@ int main()
     cout << (fm.remove("/dir2/dir3", 0) == 1);              //, passed
     cout << (fm.create_dir("/dir3/dir31") == 0);            //, passed
 
-    loop_tree("/");
-    printTree(__ind);
+    // loop_tree("/");
+    // printTree(__ind);
 
 
     cout << (fm.create_dir("../dir3/dir31") == 0);          //, passed ??? 
     cout << (fm.create_dir("../dir2") == 0);                //, passed
-    cout << (fm.create_file("/dir2/file1", 1) == 1);        //, passed
+    cout << (fm.create_file("/dir2/file1", 1) == 1);        //, passed ///
     cout << (fm.create_dir("/dir2/dir21") == 1);            //, passed
-    cout << (fm.create_dir("/dir2/file1") == 0);            //, passed
-    cout << (fm.create_dir("../dir2/file1") == 0);          //, passed
+    
+
+    printf("==============\n");
+    loop_tree("/");
+    printTree(__ind);
+    printf("==============\n");
+    
+    cout << (fm.create_dir("/dir2/file1") == 0);            //, passed///
+    
+    printf("----------------\n");
+    loop_tree("/");
+    printTree(__ind);
+       printf("----------------\n");
+    
+    cout << (fm.create_dir("../dir2/file1") == 0);          //, passed///
     cout << (fm.create_dir("../dir2/file1/dir") == 0);      //, passed
     cout << (fm.create_dir("../dir2/dir22") == 1);          //, passed
     cout << (fm.create_dir("..") == 0);                     //, passed
     cout << (fm.create_dir("../dir2/.") == 0);              //, passed
     cout << (fm.change_dir("dir2") == 0);                   //, passed
     cout << (fm.change_dir("dir11") == 1);                  //, passed
+
+    
+
     cout << (fm.remove("../../dir2/file1", 0) == 1);        //, failed
+    
+    // loop_tree("/");
+    // printTree(__ind);
+    
     cout << (fm.create_dir("../../dir2/file1") == 1);       //, passed
     cout << (fm.remove("../../dir2/file1", 0) == 1);        //, passed
     cout << (fm.create_dir("../../dir2/file1") == 1);       //, passed

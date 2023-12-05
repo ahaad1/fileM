@@ -57,7 +57,6 @@ int destroy_tree(){
 }
 
 int realloc_node(iNode *node, int index){
-    // free(node->child[index]);
     node->child[index] = NULL;
     for(_uint i = index; i < node->child_count - 1; ++i){
         iNode *tmp = node->child[i];
@@ -78,6 +77,7 @@ int remove_node(iNode *node){
     if(!node) return 0;
     for(_uint i = 0; i < node->child_count; ++i){
         remove_node(node->child[i]);
+        node->child[i] = NULL;
     }
     // printf("rm node %s\n", node->full_path);
     __ocpdsz -= node->size;
@@ -124,8 +124,7 @@ int inode_remove(const char *path, int recursive){
     }
     remove_node(del_node);
     realloc_node(parent_node, index);
-    // parent_node->child[index] = NULL;
-    del_node = NULL;
+    // del_node = NULL;
     free(to_free);
     return 1;
 }
@@ -298,7 +297,7 @@ int check_exist_move_down(const char *token)
     if(__ind->child == NULL) return -1;
     for (_uint i = 0; i < __ind->child_count; ++i)
     {
-        if (__ind->child[i] != NULL && strcmp(__ind->child[i]->name, token) == 0)
+        if (strcmp(__ind->child[i]->name, token) == 0)
         {
             __ind = __ind->child[i];
             return i;
@@ -357,11 +356,11 @@ void printTree(iNode *node)
     printf("fPth: %s\n\n", node->full_path);
     if (node->child != NULL)
     {
-        printf("Children:\n");
+        printf("Children: \n");
         for (_uint i = 0; i < node->child_count; ++i)
         {
             if(node->child[i] == NULL) continue;
-            printf("Child %u:\n", i + 1);
+            printf("Child %u\t%p:\n", i + 1, &node->child[i]);
             printTree(node->child[i]);
         }
     }
