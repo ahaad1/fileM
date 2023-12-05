@@ -1,4 +1,4 @@
-fix creating 
+fix creating (creating not needable nodes)
 fix existing
 
-/(slash) checking
+/(slash) checking (while creating)

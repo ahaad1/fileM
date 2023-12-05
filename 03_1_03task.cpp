@@ -29,6 +29,7 @@ int change_dir(const char *path);
 void get_cur_dir(char *dst);
 int remove(const char *path, int recursive);
 int destroy();
+int list(const char* path, int dir_first);
 
 int realloc_node(iNode *node, int index);
 int check_disk(iNode *node);
@@ -43,6 +44,7 @@ int remove_node(iNode *node);
 int inode_remove(const char *path, int recursive);
 int destroy_tree();
 void realloc_node(iNode *node);
+char **list_node(const char* path, int dir_first);
 
 
 int destroy_tree(){
@@ -79,7 +81,6 @@ int remove_node(iNode *node){
         remove_node(node->child[i]);
         node->child[i] = NULL;
     }
-    // printf("rm node %s\n", node->full_path);
     __ocpdsz -= node->size;
     free(node->name);
     free(node->full_path);
@@ -124,14 +125,12 @@ int inode_remove(const char *path, int recursive){
     }
     remove_node(del_node);
     realloc_node(parent_node, index);
-    // del_node = NULL;
     free(to_free);
     return 1;
 }
 
 int change_cwd(const char *path){
     if(!loop_tree(path) || !__ind->is_dir) return 0;
-    // printf("cd %s %s\n", __cwd, __ind->full_path);
     free(__cwd);
     __cwd = strdup(__ind->full_path);
     return 1;
@@ -244,6 +243,10 @@ int make_obj(const char *path, _ushrtint mode, _uint size)
             break;
         }
         is_created = 1;
+        if(loop_path != NULL){
+            is_created = 0;
+            break;
+        }
         newNode = (iNode*)malloc(sizeof(iNode));
         char *new_node_name = strdup(token);
         char *new_node_full_path = (char*)calloc(sizeof(char), strlen(__ind->full_path) + strlen(token) + strlen("/") + 1);
@@ -260,7 +263,6 @@ int make_obj(const char *path, _ushrtint mode, _uint size)
         } 
         __ind->child[__ind->child_count - 1] = newNode;
         __ocpdsz += size;
-        // printf("mk %s %s\n", newNode->name, newNode->full_path);
     }
     free(to_free);
     return is_created;
@@ -331,7 +333,7 @@ void setup_file_manager(file_manager_t *fm)
     fm->change_dir = change_dir;
     fm->get_cur_dir = get_cur_dir;
     fm->remove = remove;
-    // fm->copy = copy;
+    fm->list = list;
     fm->destroy = destroy;
 }
 
@@ -341,10 +343,14 @@ int create_file(const char *path, int file_size) { return check_disk(__ind) == 0
 int change_dir(const char *path) { return check_disk(__ind) == 0 ? 0 : change_cwd((char *)path); }
 int check_disk(iNode *node) { return node == NULL ? 0 : 1; }
 int remove(const char *path, int recursive) { return check_disk(__ind) == 0 ? 0 : inode_remove(path, recursive); }
+int list(const char* path, int dir_first) { return check_disk(__ind) == 0 ? 0 : list_node(path, dir_first); }
 int destroy() { return check_disk(__ind) == 0 ? 0 : destroy_tree(); }
 void get_cur_dir(char *dst)
 {
-    printf("cwd %s\n", __cwd);
+    if(__cwd){
+        strcpy(dst, __cwd);
+    } 
+    return;
 }
 
 void printTree(iNode *node)
