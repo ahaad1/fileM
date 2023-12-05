@@ -21,6 +21,10 @@ _uint __dsksz = 0, __ocpdsz = 0;
 iNode *__ind = NULL;
 char *__cwd = NULL;
 
+int compareStrings(const void *a, const void *b) {
+    return strcmp(*(const char **)a, *(const char **)b);
+}
+
 void setup_file_manager(file_manager_t *fm);
 int create(int disk_size);
 int create_dir(const char *path);
@@ -44,8 +48,155 @@ int remove_node(iNode *node);
 int inode_remove(const char *path, int recursive);
 int destroy_tree();
 void realloc_node(iNode *node);
-char **list_node(const char* path, int dir_first);
+int list_node(const char* path, int dir_first);
+void print_list(char *str, int dir_first);
+void sort_str(char ***path, int len);
 
+void print_list(char *str, int dir_first){
+    if(!__ind->is_dir){
+        return;
+    }
+    char **files = (char**)calloc(sizeof(char*), 1); int files_size = 0;
+    char **dirs = (char**)calloc(sizeof(char*), 1);  int dirs_size = 0;
+    for(_uint i = 0; i < __ind->child_count; ++i){
+        if(!__ind->child[i]->is_dir){
+            files = (char**)realloc(files, sizeof(char*)*(++files_size));
+            files[files_size - 1] = strdup(__ind->child[i]->name);
+        }
+        else{
+            dirs = (char**)realloc(dirs, sizeof(char*)*(++dirs_size));
+            dirs[dirs_size - 1] = strdup(__ind->child[i]->name);
+        }
+    }
+
+    if(dir_first){
+    
+        qsort(dirs, dirs_size, sizeof(dirs[0]), compareStrings);
+        qsort(files, files_size, sizeof(files[0]), compareStrings);
+
+        for(int i = 0; i < dirs_size; ++i){
+            printf("%s\n", dirs[i]);
+        }
+        for(int i = 0; i < files_size; ++i){
+            printf("%s\n", files[i]);
+        }
+    }
+
+    else{
+        char** full = (char**)calloc(sizeof(char*), dirs_size + files_size);
+        for(int i = 0; i < files_size; ++i){
+            full[i] = strdup(files[i]);
+        }
+        for(int i = 0; i < dirs_size; ++i){
+            full[i + files_size] = strdup(dirs[i]);
+        }
+        qsort(full, dirs_size + files_size , sizeof(full[0]), compareStrings);
+        for(int i = 0; i < dirs_size + files_size; ++i){
+            printf("%s\n", full[i]);
+            free(full[i]);
+        }
+        free(full);
+    }
+
+    for(int i = 0; i < files_size; ++i) free(files[i]);
+    for(int i = 0; i < dirs_size; ++i) free(dirs[i]);
+    free(dirs);
+    free(files);
+}
+
+int list_node(const char* path, int dir_first){
+    int ret_val = 1;
+    char *main_token, *main_loop_path, *main_to_free;
+    main_to_free = main_loop_path = strdup(path);
+    while((main_token = strsep(&main_loop_path, " ")) != NULL){
+        
+        if (!strcmp(main_token, "") || main_token[0] == '\0')
+        {
+           continue;
+        }
+        char bdSymb[] = "!#$%&\'()*+,-:;<=>?@[\\]^`{|}~";
+        for (size_t i = 0; i < strlen(bdSymb); i++)
+        {
+            if (strchr(main_token, bdSymb[i]) != NULL)
+            {
+                continue;
+            }
+        }
+        if(!loop_tree(main_token)){
+            ret_val = 0;
+            // continue;
+            break;
+        }
+        __ind->is_dir ? printf("%s:\n", __ind->name) : printf("%s\n", main_token);
+        print_list(main_token, dir_first); 
+    }
+
+    free(main_to_free);
+    return ret_val;
+}
+
+int loop_tree(const char *path)
+{
+    int ret_val = 0;
+    while (__ind->parent != NULL)
+        __ind = __ind->parent;
+    if(!strcmp(path, "/")) return 1;
+    char *token, *loop_path, *to_free, 
+         *passed_path = (char *)calloc(sizeof(char), 1), 
+         *full_path = (char *)calloc(sizeof(char), 1);
+    if (path[0] == '/')
+    {
+        to_free = loop_path = strdup(path);
+        full_path = (char *)realloc(full_path, sizeof(char) * strlen(loop_path) + 1);
+        strcpy(full_path, loop_path);
+    }
+    if (path[0] != '/')
+    {
+        to_free = loop_path = (char *)calloc(sizeof(char), (strlen(__cwd) + strlen(path) + 1));
+        strcat(loop_path, __cwd);
+        strcat(loop_path, path);
+        full_path = (char *)realloc(full_path, sizeof(char) * strlen(loop_path) + 1);
+        strcpy(full_path, loop_path);
+    }
+
+    while ((token = strsep(&loop_path, "/")) != NULL)
+    {
+        if (!strcmp(token, ".")){
+            passed_path = (char *)realloc(passed_path, sizeof(char) * (strlen(passed_path) + strlen(token) + strlen("/") + 1));
+            strcat(passed_path, "/");
+            strcat(passed_path, token);
+            continue;
+        }
+        if (!strcmp(token, ".."))
+        {
+            if (__ind->parent != NULL)
+                __ind = __ind->parent;
+            passed_path = (char *)realloc(passed_path, sizeof(char) * (strlen(passed_path) + strlen(token) + strlen("/") + 1));
+            strcat(passed_path, "/");
+            strcat(passed_path, token);
+            continue;
+        }
+        if(!check_token(token)){
+            continue;
+        }
+        if(check_exist_move_down(token) != -1){
+            passed_path = (char *)realloc(passed_path, sizeof(char) * (strlen(passed_path) + strlen(token) + strlen("/") + 1));
+            strcat(passed_path, "/");
+            strcat(passed_path, token);
+        }
+        else{
+            ret_val = 0;
+            break;
+        }
+    }
+    if(!strcmp(full_path, passed_path)){
+        ret_val = 1;
+    }
+    free(to_free);
+    free(full_path);
+    free(passed_path);
+    return ret_val;
+}
 
 int destroy_tree(){
     loop_tree("/");
@@ -134,69 +285,6 @@ int change_cwd(const char *path){
     free(__cwd);
     __cwd = strdup(__ind->full_path);
     return 1;
-}
-
-int loop_tree(const char *path)
-{
-    int ret_val = 0;
-    while (__ind->parent != NULL)
-        __ind = __ind->parent;
-    if(!strcmp(path, "/")) return 1;
-    char *token, *loop_path, *to_free, 
-         *passed_path = (char *)calloc(sizeof(char), 1), 
-         *full_path = (char *)calloc(sizeof(char), 1);
-    if (path[0] == '/')
-    {
-        to_free = loop_path = strdup(path);
-        full_path = (char *)realloc(full_path, sizeof(char) * strlen(loop_path) + 1);
-        strcpy(full_path, loop_path);
-    }
-    if (path[0] != '/')
-    {
-        to_free = loop_path = (char *)calloc(sizeof(char), (strlen(__cwd) + strlen(path) + 1));
-        strcat(loop_path, __cwd);
-        strcat(loop_path, path);
-        full_path = (char *)realloc(full_path, sizeof(char) * strlen(loop_path) + 1);
-        strcpy(full_path, loop_path);
-    }
-
-    while ((token = strsep(&loop_path, "/")) != NULL)
-    {
-        if (!strcmp(token, ".")){
-            passed_path = (char *)realloc(passed_path, sizeof(char) * (strlen(passed_path) + strlen(token) + strlen("/") + 1));
-            strcat(passed_path, "/");
-            strcat(passed_path, token);
-            continue;
-        }
-        if (!strcmp(token, ".."))
-        {
-            if (__ind->parent != NULL)
-                __ind = __ind->parent;
-            passed_path = (char *)realloc(passed_path, sizeof(char) * (strlen(passed_path) + strlen(token) + strlen("/") + 1));
-            strcat(passed_path, "/");
-            strcat(passed_path, token);
-            continue;
-        }
-        if(!check_token(token)){
-            continue;
-        }
-        if(check_exist_move_down(token) != -1){
-            passed_path = (char *)realloc(passed_path, sizeof(char) * (strlen(passed_path) + strlen(token) + strlen("/") + 1));
-            strcat(passed_path, "/");
-            strcat(passed_path, token);
-        }
-        else{
-            ret_val = 0;
-            break;
-        }
-    }
-    if(!strcmp(full_path, passed_path)){
-        ret_val = 1;
-    }
-    free(to_free);
-    free(full_path);
-    free(passed_path);
-    return ret_val;
 }
 
 // mode: 1 - folder, 0 - file
@@ -310,7 +398,7 @@ int check_exist_move_down(const char *token)
 
 int check_token(const char *tkn)
 {
-    if (strlen(tkn) <= 0 || strlen(tkn) > 32 || !strcmp(tkn, "") || tkn[0] == '\0' /*!strcmp(tkn, ".") || !strcmp(tkn, "..") || tkn[0] == '.' ||*/)
+    if (strlen(tkn) <= 0 || strlen(tkn) > 32 || !strcmp(tkn, "") || tkn[0] == '\0')
     {
         return 0;
     }
