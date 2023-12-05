@@ -127,10 +127,9 @@ int list_node(const char* path, int dir_first){
             // continue;
             break;
         }
-        __ind->is_dir ? printf("%s:\n", __ind->name) : printf("%s\n", main_token);
+        __ind->is_dir ? printf("%s:\n", main_token) : printf("%s\n", main_token);
         print_list(main_token, dir_first); 
     }
-
     free(main_to_free);
     return ret_val;
 }
